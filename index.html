@@ -1,0 +1,4085 @@
+<!doctype html>
+<html lang="zh-Hant"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIxNDgyNTIwMjc3OTQxOTIyOTcyNiIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjX2E4ZTI3MDBhNjRlODNlMThfaW5kZXguaHRtbC0zNjgifSwiZXhwIjoxNzkzMDYzOTYwLCJpYXQiOjE3OTMwNjAzNjAsImFsZyI6IlJTMjU2In0.dBda5rgNnBchi19qpBCibbiuyQlMBkm14rTZDAqXlBf5ZEgKUkqtTibzxQ9hPe-9-xSEF2gtyOKZdfUMNJvMKmiKcC-Pv776BDtWhHQBimUVcYuqAwo8a0YhW7jZNaJV-wFKHs0_FW_olUwQPN92El_krvYwWoRs5EpGCxoiioNiHOUABk9oZZH1BgCs1ffKUfkgtTixKfZ6wxRYxvCEGFdCM2kJ1r9F-0oFfOaqwoXi7qLLcr2lI23MrwjoanEv1BspjfVZW7lmVkXGEz1LbvuZN7ftt2PH_-DLp1pga2xsq7_-rshJk70c5bd9UQs-oz4U6b5DQcPGYk5aZEyHHA","c_a8e2700a64e83e18_index.html-368")</script><script data-bard-client-injected="true">
+  document.addEventListener('input', (event) => {
+    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
+      const clonedDoc = document.cloneNode(true);
+      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
+      injectedScripts.forEach(el => el.remove());
+      window.parent.postMessage({
+        type: 'inlineEdit',
+        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
+      }, '*');
+    }
+  });
+</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const SCROLL_KEYS = new Set([
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
+  ]);
+  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+
+  function isTextEntryTarget(target) {
+    if (!target) return false;
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' || target.isContentEditable === true;
+  }
+
+  // An element absorbs the key only if it both overflows on the axis being
+  // scrolled and is configured to scroll on that axis. The cheap dimension
+  // test runs first because getComputedStyle forces a style recalc, and this
+  // runs on every keypress. Each axis is read from its own longhand: the
+  // 'overflow' shorthand serializes as two values when the axes differ, which
+  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
+  function canScroll(node, horizontal) {
+    const overflows = horizontal ? node.scrollWidth > node.clientWidth
+                                 : node.scrollHeight > node.clientHeight;
+    if (!overflows) return false;
+    const style = window.getComputedStyle(node);
+    const overflow = horizontal ? style.overflowX : style.overflowY;
+    return overflow === 'auto' || overflow === 'scroll';
+  }
+
+  // Walks up from the event target so nested scrollers keep their behavior.
+  // <body> is included because pages that pin the root height make it the
+  // scroll container.
+  function hasScrollableAncestor(target, horizontal) {
+    let node = target;
+    while (node && node !== document.documentElement) {
+      if (canScroll(node, horizontal)) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function rootCanScroll(horizontal) {
+    const scroller = document.scrollingElement || document.documentElement;
+    if (!scroller) return false;
+    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
+    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
+                      : scroller.scrollHeight > window.innerHeight + 1;
+  }
+
+  window.addEventListener('keydown', function(event) {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    if (event.defaultPrevented) return;
+    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
+    // reserved for shortcuts, so none of them are scroll intent.
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+
+    const target = event.target;
+    if (isTextEntryTarget(target)) return;
+
+    // Anything that can still absorb the scroll gets to keep it.
+    const horizontal = HORIZONTAL_KEYS.has(event.key);
+    if (rootCanScroll(horizontal)) return;
+    if (hasScrollableAncestor(target, horizontal)) return;
+
+    event.preventDefault();
+  }, {capture: true, passive: false});
+})();</script><script data-bard-client-injected="true">(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script data-bard-client-injected="true">
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
+function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+function A(b,d){function e(){}e.prototype=d.prototype;b.j=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
+let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
+null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.i="";var l=0,t=null,r=null,q=[],F=new TextEncoder,G=new TextDecoder;
+c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*16|0;return(f===
+"x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;(g=t)==null||g.postMessage(a)}};
+Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
+(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
+url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
+</script><script data-bard-client-injected="true">((function(modelInformation) {
+  const originalFetch = window.fetch;
+  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
+  let googleLlmBaseApiUrls = [
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageTransformModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
+  ];
+  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+    );
+  });
+  modelInformation.deprecatedImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predict',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predictLongRunning',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedGenerateImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedImageTransformModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+
+  const pendingFetchResolvers = {};
+  let nextPromiseId = 0;
+
+  function handleStringInput(input, optionsArgument) {
+    const actualUrl = input;
+    const fetchCallArgs = [actualUrl, optionsArgument];
+    const effectiveOptions = optionsArgument || {};
+    const bodyForApiKeyCheck = effectiveOptions.body;
+    const bodyForPostMessage = effectiveOptions.body;
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  function handleRequestInput(input, optionsArgument) {
+    const actualUrl = input.url;
+    const fetchCallArgs = [input, optionsArgument];
+    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (optionsArgument) {
+      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
+      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
+      if ('body' in optionsArgument) {
+        bodyForApiKeyCheck = optionsArgument.body;
+        bodyForPostMessage = optionsArgument.body;
+      } else {
+        bodyForApiKeyCheck = undefined;
+        bodyForPostMessage = input.body;
+      }
+    } else {
+      bodyForApiKeyCheck = undefined;
+      bodyForPostMessage = input.body;
+    }
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  window.fetch = function(input, optionsArgument) {
+    let actualUrl;
+    let fetchCallArgs;
+    let effectiveOptions = {};
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (typeof input === 'string') {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
+    } else if (input instanceof Request) {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
+    } else {
+      return originalFetch.apply(window, [input, optionsArgument]);
+    }
+
+    effectiveOptions.method = effectiveOptions.method || 'GET';
+    if (!effectiveOptions.headers) {
+      effectiveOptions.headers = new Headers();
+    }
+
+
+    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
+      let apiKeyIsNull = true;
+
+      const regex = new RegExp("models/([^:]+)");
+      const modelNameMatch = actualUrl.match(regex);
+      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
+
+
+      try {
+        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
+        const apiKeyParam = urlObject.searchParams.get('key');
+        if (apiKeyParam) {
+          apiKeyIsNull = false;
+        }
+      } catch (e) {
+        // Continue checks even if URL parsing fails
+      }
+
+      if (apiKeyIsNull && effectiveOptions.headers) {
+        const h = new Headers(effectiveOptions.headers);
+        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
+        if (apiKeyHeaderValue) {
+          apiKeyIsNull = false;
+          return originalFetch.apply(window, fetchCallArgs);
+        }
+      }
+
+      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
+        try {
+          const bodyData = JSON.parse(bodyForApiKeyCheck);
+          if (bodyData && bodyData.apiKey) {
+            apiKeyIsNull = false;
+            return originalFetch.apply(window, fetchCallArgs);
+          }
+        } catch (e) {
+          // Ignore JSON parsing errors
+        }
+      }
+
+      if(apiKeyIsNull) {
+        const promiseId = nextPromiseId++;
+        const promise = new Promise((resolve) => {
+          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
+            delete pendingFetchResolvers[promiseId];
+            resolve(resolvedResponse);
+          };
+        });
+
+        let serializedBodyForPostMessage;
+        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
+            serializedBodyForPostMessage = bodyForPostMessage;
+        } else if (bodyForPostMessage instanceof ReadableStream) {
+            serializedBodyForPostMessage = null;
+        } else {
+            try {
+                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
+            } catch (e) {
+                serializedBodyForPostMessage = null;
+            }
+        }
+
+        const messageOptions = {
+            method: effectiveOptions.method,
+            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
+            body: serializedBodyForPostMessage
+        };
+
+        window.parent.postMessage({
+          type: 'requestFetch',
+          url: actualUrl,
+          modelName: modelName,
+          options: messageOptions,
+          promiseId: promiseId,
+        }, '*');
+
+        return promise;
+      }
+      return originalFetch.apply(window, fetchCallArgs);
+    }
+    return originalFetch.apply(window, fetchCallArgs);
+  };
+
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'resolveFetch') {
+      const { promiseId, response } = event.data;
+      if (pendingFetchResolvers[promiseId]) {
+        try {
+          const reconstructedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers),
+          });
+          pendingFetchResolvers[promiseId](reconstructedResponse);
+        } catch (error) {
+          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
+        }
+      }
+    }
+  });
+
+}))({"textModelName":"gemini-3-flash-preview","imageModelName":"imagen-4.0-generate-001","imageEditModelName":"gemini-3.1-flash-image","imageTransformModelName":"gemini-3-pro-image","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-flash-preview-05-20","gemini-2.5-flash-preview-09-2025"],"deprecatedImageModelNames":["imagen-3.0-generate-001","imagen-3.0-generate-002"],"deprecatedGenerateImageModelNames":["gemini-2.5-flash-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-image-preview"],"deprecatedImageTransformModelNames":["gemini-3-pro-image-preview-11-2025"]})</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<meta name="theme-color" content="#dff4ef">
+<meta name="description" content="氣球大頭症：學習歷程群島 3D 互動探索、情境抉擇、故事實驗室與成長角色卡">
+<title>學習歷程群島｜氣球大頭症（旗艦互動版）</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&amp;display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --ink: #1e3545;
+  --muted: #5c7280;
+  --mint: #dff4ed;
+  --paper: #fffdf8;
+  --teal: #2d8a78;
+  --teal-dark: #1f685a;
+  --gold: #e8b85c;
+  --line: #d6e8e2;
+  --card-bg: rgba(255, 255, 255, 0.92);
+}
+
+* { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  font-family: "Noto Sans TC", system-ui, -apple-system, sans-serif;
+  color: var(--ink);
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(ellipse at 10% 6%, #e0f8f0 0%, transparent 38%),
+    radial-gradient(ellipse at 92% 18%, #fff1d6 0%, transparent 32%),
+    radial-gradient(ellipse at 50% 85%, #e8eeff 0%, transparent 40%),
+    #f2f8f9;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Sticky Top Bar */
+.top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: rgba(255, 255, 255, 0.84);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(205, 230, 222, 0.8);
+  box-shadow: 0 4px 20px rgba(36, 60, 76, 0.05);
+}
+
+.nav-link {
+  padding: 7px 13px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #365868;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+}
+.nav-link:hover {
+  background: #eaf7f2;
+  color: var(--teal-dark);
+  border-color: #c6e7dc;
+}
+.nav-link.active {
+  background: linear-gradient(135deg, #2d8a78, #44a692);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(45, 138, 120, 0.25);
+}
+
+/* Hero Header */
+header.hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(22px, 3.8vw, 40px) clamp(16px, 4vw, 40px);
+  background: linear-gradient(125deg, #d2f5e6 0%, #e6ecff 52%, #ffefd2 100%);
+  border-bottom: 1px solid #d5e8e1;
+}
+header.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(45, 138, 120, 0.08) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+}
+header.hero::after {
+  content: "✦   ✧      ✦";
+  position: absolute;
+  right: 5%;
+  top: 16%;
+  font-size: clamp(26px, 5vw, 56px);
+  letter-spacing: 16px;
+  color: rgba(255, 255, 255, 0.75);
+  transform: rotate(-8deg);
+  pointer-events: none;
+}
+
+.kicker {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 2.4px;
+  color: #377d6e;
+  text-transform: uppercase;
+}
+
+/* Main Container */
+main {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* 3D Stage & Overlays */
+.stage-wrap {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #bce9e8, #8fcfda);
+  border: 2px solid #cdebe3;
+  box-shadow: 0 20px 50px rgba(45, 95, 92, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+#world {
+  display: block;
+  width: 100%;
+  height: min(64vh, 580px);
+  min-height: 360px;
+  touch-action: none;
+  cursor: grab;
+}
+#world:active { cursor: grabbing; }
+
+/* Projected 2D Labels on 3D Canvas */
+#island-markers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.island-marker {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  pointer-events: auto;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(8px);
+  border: 1.5px solid #cde5de;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #264858;
+  box-shadow: 0 4px 14px rgba(28, 66, 62, 0.15);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  user-select: none;
+}
+.island-marker:hover {
+  background: #ffffff;
+  border-color: #46a08b;
+  box-shadow: 0 6px 18px rgba(45, 138, 120, 0.28);
+}
+.island-marker.active {
+  background: linear-gradient(135deg, #2b8573, #42a690);
+  color: #ffffff;
+  border-color: #ffffff;
+  box-shadow: 0 6px 20px rgba(43, 133, 115, 0.45);
+}
+.island-marker .check-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  font-size: 9px;
+  background: #e1f4ec;
+  color: #257363;
+}
+.island-marker.active .check-dot {
+  background: rgba(255, 255, 255, 0.26);
+  color: #fff;
+}
+
+.hud-top {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+  pointer-events: none;
+  z-index: 10;
+}
+.hud-pill {
+  pointer-events: auto;
+  border-radius: 999px;
+  padding: 7px 13px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(10px);
+  font-size: 12px;
+  font-weight: 800;
+  color: #244352;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.env-switcher {
+  pointer-events: auto;
+  display: inline-flex;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
+  gap: 3px;
+}
+.env-btn {
+  border: none;
+  background: transparent;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #466370;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.env-btn.active {
+  background: #2d8a78;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(45, 138, 120, 0.3);
+}
+
+/* Controls Bar */
+.controls-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  background: rgba(240, 248, 245, 0.95);
+  border-top: 1px solid #d7eae3;
+}
+
+.btn {
+  border: 1px solid #cfe2dc;
+  background: #ffffff;
+  color: #294c5e;
+  border-radius: 13px;
+  padding: 9px 15px;
+  font-size: 13px;
+  font-weight: 800;
+  min-height: 40px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 3px 0 #d5e5df;
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s, border-color 0.15s;
+  user-select: none;
+}
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 12px rgba(45, 105, 92, 0.14), 0 3px 0 #c5dcd4;
+  background: #f6fcfa;
+  border-color: #9fd0c0;
+}
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 #d5e5df;
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #2d8a78, #44a692);
+  color: #ffffff;
+  border-color: #257566;
+  box-shadow: 0 3px 0 #1c5c50;
+}
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #267969, #3b9885);
+  color: #ffffff;
+  border-color: #1f6658;
+  box-shadow: 0 5px 14px rgba(45, 138, 120, 0.3), 0 3px 0 #1c5c50;
+}
+
+/* Panels & Grid */
+.layout-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(300px, 0.92fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.panel {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 18px;
+  box-shadow: 0 10px 28px rgba(45, 90, 84, 0.06);
+  transition: box-shadow 0.25s;
+}
+.panel:hover {
+  box-shadow: 0 14px 34px rgba(45, 90, 84, 0.1);
+}
+.panel h2 {
+  font-size: 18px;
+  font-weight: 900;
+  margin: 0 0 4px;
+  color: #1d3949;
+}
+.muted {
+  font-size: 12.5px;
+  line-height: 1.75;
+  color: var(--muted);
+}
+
+/* Island Selector Cards */
+.islands-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+.island-card {
+  position: relative;
+  border: 1.5px solid #dcebe5;
+  background: #fcfefd;
+  text-align: left;
+  padding: 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  color: inherit;
+  transition: all 0.2s ease;
+}
+.island-card:hover {
+  transform: translateY(-2px);
+  border-color: #8cc9b6;
+  box-shadow: 0 8px 20px rgba(56, 139, 124, 0.12);
+}
+.island-card[aria-pressed="true"] {
+  border: 2px solid #389682;
+  background: linear-gradient(145deg, #ecfaf4, #f6fffb);
+  box-shadow: 0 8px 22px rgba(56, 150, 130, 0.18);
+}
+.island-card small {
+  font-size: 10px;
+  color: #468475;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+.island-card strong {
+  display: block;
+  font-size: 13.5px;
+  line-height: 1.45;
+  margin-top: 4px;
+  color: #1f3a4a;
+}
+.island-card span.sub {
+  font-size: 11px;
+  color: #6b7f8a;
+  display: inline-block;
+  margin-top: 3px;
+}
+.island-visited-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #dff4ea;
+  color: #267362;
+}
+
+/* Island Detail & Rooms */
+.detail-box {
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #eff8f4, #f7fbf9);
+  border: 1px solid #d5e8e1;
+}
+.detail-box h3 {
+  font-size: 21px;
+  font-weight: 900;
+  margin: 4px 0 8px;
+  color: #1c3a48;
+}
+.detail-box p {
+  font-size: 13.5px;
+  line-height: 1.85;
+  color: #3f5866;
+  margin: 0;
+}
+.rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 13px;
+}
+.room-card {
+  background: #ffffff;
+  border: 1.5px solid #dceae4;
+  border-radius: 14px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+.room-card:hover {
+  transform: translateY(-3px);
+  border-color: #7ec4ae;
+  box-shadow: 0 8px 18px rgba(45, 115, 98, 0.12);
+}
+.room-card.selected-room {
+  border: 2px solid #359680;
+  background: #ecfaf3;
+  box-shadow: 0 6px 16px rgba(53, 150, 128, 0.16);
+}
+.room-card .emoji { font-size: 24px; }
+.room-card strong {
+  display: block;
+  font-size: 12.5px;
+  margin: 5px 0 3px;
+  color: #1f3c4c;
+}
+.room-card span {
+  font-size: 11px;
+  line-height: 1.55;
+  color: #677b86;
+  display: block;
+}
+.room-note-indicator {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  font-size: 10px;
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffe69c;
+  border-radius: 99px;
+  padding: 1px 6px;
+  font-weight: 800;
+}
+
+.room-detail-drawer {
+  background: #ffffff;
+  border: 1.5px solid #cbe3da;
+  border-radius: 15px;
+  padding: 14px;
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.8;
+  box-shadow: 0 6px 18px rgba(45, 110, 95, 0.08);
+  animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #daf0e8;
+  color: #21695a;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 5px 10px;
+  margin: 4px 4px 0 0;
+}
+.causal-box {
+  border-left: 3.5px solid #e6b85c;
+  background: rgba(255, 255, 255, 0.68);
+  padding: 8px 12px;
+  border-radius: 0 10px 10px 0;
+  font-size: 12.5px;
+  line-height: 1.75;
+  color: #465f6d;
+  margin-top: 11px;
+}
+
+/* Badges & Daily Quest */
+.badge-shelf {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0;
+}
+.reward-badge {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  border: 1px solid #dce8e3;
+  background: #f9fbfa;
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #7c8d96;
+  opacity: 0.65;
+  transition: all 0.25s ease;
+}
+.reward-badge.earned {
+  opacity: 1;
+  background: linear-gradient(135deg, #fff9e2, #fff1c2);
+  border-color: #e4c467;
+  color: #7a5818;
+  box-shadow: 0 4px 12px rgba(230, 195, 95, 0.28);
+  transform: translateY(-2px);
+}
+
+.challenge-box {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(125deg, #f1ebff 0%, #fff7e0 100%);
+  border: 1px solid #e2d4f4;
+  border-radius: 18px;
+  padding: 16px;
+  margin-top: 12px;
+}
+.challenge-box::after {
+  content: "✦";
+  position: absolute;
+  right: 18px;
+  top: 6px;
+  font-size: 54px;
+  color: rgba(255, 255, 255, 0.7);
+  pointer-events: none;
+}
+
+/* Choice Journey */
+.journey-progress {
+  height: 11px;
+  background: #e3eeea;
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 12px 0 6px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+.journey-progress > div {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #3fa58e, #84ce95, #f0c365);
+  transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.step-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 4px 2px 8px;
+}
+.step-tab {
+  border: 1px solid #d5e6df;
+  background: #fff;
+  color: #4b6875;
+  border-radius: 10px;
+  padding: 6px 11px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.step-tab.active {
+  background: #2d8a78;
+  color: #fff;
+  border-color: #2d8a78;
+}
+.step-tab.done:not(.active) {
+  background: #eaf8f2;
+  color: #267362;
+  border-color: #a9dccb;
+}
+
+.choice-card {
+  border: 1px solid #d5e8e1;
+  background: linear-gradient(145deg, #f9fffb, #f3f8ff);
+  border-radius: 18px;
+  padding: 18px;
+  margin-top: 8px;
+}
+.choice-option {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  border: 1.5px solid #dbe8e3;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 13px;
+  margin-top: 9px;
+  cursor: pointer;
+  line-height: 1.7;
+  font-size: 14px;
+  transition: all 0.18s ease;
+}
+.choice-option:hover {
+  transform: translateX(3px);
+  border-color: #84c6b1;
+}
+.choice-option input {
+  margin-top: 5px;
+  accent-color: #2d8a78;
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+}
+.choice-option:has(input:checked) {
+  border: 2px solid #359680;
+  background: #ecfaf3;
+  box-shadow: 0 6px 16px rgba(53, 150, 128, 0.12);
+}
+.choice-note {
+  font-size: 12.5px;
+  color: #2e6659;
+  background: #e6f6ef;
+  border-left: 3.5px solid #389682;
+  padding: 10px 12px;
+  border-radius: 0 10px 10px 0;
+  line-height: 1.75;
+  margin-top: 12px;
+}
+
+.now-me-panel {
+  display: none;
+  background: linear-gradient(135deg, #e2f5ea 0%, #fff4d9 100%);
+  border: 1.5px solid #cde5d8;
+  border-radius: 20px;
+  padding: 20px;
+  margin-top: 16px;
+}
+.now-me-panel.visible {
+  display: block;
+  animation: fadeIn 0.35s ease;
+}
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+.profile-item {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(210, 232, 222, 0.9);
+  border-radius: 14px;
+  padding: 12px;
+}
+.profile-item strong {
+  display: block;
+  font-size: 13.5px;
+  color: #1f4252;
+}
+.profile-item span {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #516b76;
+}
+.action-line {
+  padding: 12px 14px;
+  border-left: 4px solid #d9ab4e;
+  background: rgba(255, 255, 255, 0.82);
+  border-radius: 0 12px 12px 0;
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+/* Story Lab Games */
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+  margin-top: 16px;
+}
+.game-card {
+  min-width: 0;
+  border: 1px solid #d6e8e2;
+  border-radius: 20px;
+  padding: 18px;
+  background: linear-gradient(145deg, #ffffff, #f6fbf9);
+  box-shadow: 0 10px 26px rgba(45, 95, 88, 0.07);
+  display: flex;
+  flex-direction: column;
+}
+.game-number {
+  font-size: 10.5px;
+  letter-spacing: 1.8px;
+  font-weight: 900;
+  color: #398575;
+}
+.game-card h3 {
+  font-size: 19px;
+  font-weight: 900;
+  margin: 5px 0 6px;
+  color: #1d3948;
+}
+.game-card > p {
+  font-size: 12.5px;
+  line-height: 1.75;
+  color: #5b717d;
+  margin: 0 0 10px;
+}
+
+/* 01 Balloon Stage */
+.balloon-stage {
+  height: 205px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 78%, #daf2e6, #eff8ff 72%);
+  border: 1px solid #d8ece4;
+  border-radius: 16px;
+  margin: 8px 0 12px;
+}
+.interactive-balloon {
+  --balloon-size: 86px;
+  width: var(--balloon-size);
+  height: calc(var(--balloon-size) * 1.14);
+  border-radius: 52% 48% 48% 52% / 45% 45% 55% 55%;
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.75) 0 6%, transparent 26%),
+    radial-gradient(circle at 35% 25%, #ffd2df, #f0739c 62%, #d14474);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 20px;
+  z-index: 2;
+  box-shadow: inset -8px -10px 16px rgba(140, 35, 72, 0.22), 0 10px 24px rgba(215, 95, 135, 0.32);
+  transition: width 0.38s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.38s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.38s ease, background 0.35s ease;
+}
+.interactive-balloon.humble-state {
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.8) 0 6%, transparent 26%),
+    radial-gradient(circle at 35% 25%, #ffdbe6, #f48fb0 65%, #de628b);
+}
+.interactive-balloon.danger-wobble {
+  animation: balloonShake 0.45s infinite alternate;
+}
+@keyframes balloonShake {
+  0% { transform: translateY(-16px) rotate(-4deg) scale(1.02); }
+  100% { transform: translateY(-20px) rotate(4deg) scale(1.05); }
+}
+.interactive-balloon::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: calc(50% - 7px);
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 10px solid #d14474;
+}
+.balloon-face {
+  font-size: 20px;
+  line-height: 1;
+  margin-bottom: 2px;
+  user-select: none;
+}
+.interactive-balloon span.balloon-label {
+  font-size: 10.5px;
+  font-weight: 900;
+  color: #6b1d39;
+  text-align: center;
+  max-width: 84%;
+  line-height: 1.25;
+}
+.balloon-thought {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #d9e8e3;
+  border-radius: 12px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #3d5a68;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  z-index: 3;
+}
+.balloon-string {
+  position: absolute;
+  top: 116px;
+  height: 68px;
+  border-left: 1.5px dashed #b47a89;
+  z-index: 1;
+}
+.balloon-shadow {
+  position: absolute;
+  bottom: 14px;
+  width: 84px;
+  height: 13px;
+  background: rgba(135, 190, 175, 0.45);
+  border-radius: 50%;
+  filter: blur(4px);
+}
+
+.meter {
+  height: 9px;
+  background: #e4eeeb;
+  border-radius: 99px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+.meter > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #5ec29f, #f0b865, #ea678d);
+  border-radius: 99px;
+  transition: width 0.35s ease;
+}
+
+/* 02 Response Options & Chat */
+.response-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.response-option {
+  border: 1.5px solid #dce8e4;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 10px 6px;
+  cursor: pointer;
+  color: #294654;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.18s ease;
+}
+.response-option:hover {
+  transform: translateY(-2px);
+  border-color: #82c5b0;
+  box-shadow: 0 5px 14px rgba(45, 125, 106, 0.1);
+}
+.response-option.chosen {
+  border: 2px solid #359680;
+  background: #ecfaf3;
+  box-shadow: 0 5px 14px rgba(53, 150, 128, 0.16);
+}
+.response-option span.icon { font-size: 24px; }
+.response-option b { font-size: 11.5px; }
+.response-option small {
+  font-size: 10px;
+  line-height: 1.35;
+  color: #6d8089;
+  text-align: center;
+}
+
+.chat-sim-box {
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 14px;
+  background: #f2f8f6;
+  border: 1px solid #d8e8e2;
+  font-size: 12.5px;
+  line-height: 1.7;
+  min-height: 92px;
+}
+
+/* 03 Crown Stage */
+.crown-stage {
+  height: 148px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: radial-gradient(ellipse, #fff4cc, #f9f6ff 72%);
+  border: 1px solid #e8e2d5;
+  border-radius: 16px;
+  margin: 8px 0 10px;
+  overflow: hidden;
+}
+.interactive-crown {
+  font-size: 70px;
+  filter: drop-shadow(0 8px 6px rgba(140, 116, 53, 0.25));
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.35s ease;
+  user-select: none;
+}
+.crown-crack {
+  position: absolute;
+  right: 33%;
+  top: 26%;
+  font-size: 28px;
+  color: #d14949;
+  opacity: 0;
+  transform: scale(0.3) rotate(-20deg);
+  transition: all 0.35s ease;
+  pointer-events: none;
+}
+.crown-motive-pill {
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #5b4b28;
+}
+
+/* 04 Holographic 3D Tilt Character Card */
+.character-card-wrap {
+  perspective: 900px;
+  margin: 8px 0 10px;
+}
+.character-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 255px;
+  border-radius: 20px;
+  padding: 18px;
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 0%, #fff7db, transparent 52%),
+    linear-gradient(145deg, #d9f4e6 0%, #e7ecff 58%, #fff2d6 100%);
+  background-color: #e3f5ec;
+  border: 2px solid #c9e3d9;
+  box-shadow: 0 12px 28px rgba(42, 92, 82, 0.14);
+  transform-style: preserve-3d;
+  transition: transform 0.15s ease-out, box-shadow 0.2s ease;
+  user-select: none;
+}
+.character-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.45) 45%,
+    rgba(255, 235, 180, 0.35) 50%,
+    transparent 75%
+  );
+  opacity: 0;
+  transition: opacity 0.25s;
+  pointer-events: none;
+}
+.character-card:hover::before {
+  opacity: 1;
+}
+.character-avatar {
+  font-size: 56px;
+  margin: 4px auto;
+  filter: drop-shadow(0 6px 6px rgba(45, 110, 95, 0.2));
+}
+.character-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+}
+.character-stats span {
+  font-size: 10.5px;
+  font-weight: 800;
+  border-radius: 99px;
+  padding: 5px 10px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(190, 222, 210, 0.8);
+  color: #356357;
+}
+
+/* Closing Section & Timeline */
+.closing-banner {
+  position: relative;
+  overflow: hidden;
+  margin-top: 18px;
+  background: linear-gradient(125deg, #dbf3e6, #fff0cf);
+  border: 1px solid #e2dec2;
+  border-radius: 22px;
+  padding: 22px;
+  box-shadow: 0 12px 30px rgba(120, 98, 45, 0.08);
+}
+.timeline-row {
+  display: flex;
+  overflow-x: auto;
+  gap: 14px;
+  padding: 14px 4px 4px;
+}
+.timeline-step {
+  min-width: 96px;
+  text-align: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #4c6774;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.timeline-step:hover { transform: translateY(-2px); }
+.timeline-dot {
+  height: 15px;
+  width: 15px;
+  background: #58b099;
+  border-radius: 50%;
+  margin: 0 auto 7px;
+  border: 3px solid #d4ebe1;
+  transition: all 0.2s;
+}
+.timeline-step.active .timeline-dot {
+  background: #e6ad45;
+  transform: scale(1.25);
+  box-shadow: 0 0 0 4px rgba(230, 173, 69, 0.25);
+}
+
+/* Floating Toast & Custom Modal */
+.floating-toast {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  z-index: 100;
+  background: rgba(28, 66, 60, 0.95);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  padding: 11px 20px;
+  border-radius: 999px;
+  box-shadow: 0 10px 28px rgba(20, 55, 50, 0.35);
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  max-width: 92vw;
+  text-align: center;
+}
+.floating-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  background: rgba(20, 42, 52, 0.45);
+  backdrop-filter: blur(5px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.modal-backdrop.open {
+  display: flex;
+  animation: fadeIn 0.2s ease;
+}
+.modal-card {
+  background: #ffffff;
+  border: 1px solid #d5e8e1;
+  border-radius: 22px;
+  max-width: 440px;
+  width: 100%;
+  padding: 22px;
+  box-shadow: 0 24px 60px rgba(20, 48, 58, 0.25);
+}
+
+@media (max-width: 820px) {
+  .layout-grid, .game-grid { grid-template-columns: 1fr; }
+  #world { height: 400px; min-height: 330px; }
+  .profile-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) {
+  .rooms-grid { grid-template-columns: 1fr; }
+  .island-marker { font-size: 10px; padding: 3px 7px; }
+}
+</style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.relative{position:relative}.z-10{z-index:10}.\!m-0{margin:0px !important}.m-0{margin:0px}.mx-auto{margin-left:auto;margin-right:auto}.my-1{margin-top:0.25rem;margin-bottom:0.25rem}.my-2{margin-top:0.5rem;margin-bottom:0.5rem}.my-3{margin-top:0.75rem;margin-bottom:0.75rem}.mb-0{margin-bottom:0px}.mb-0\.5{margin-bottom:0.125rem}.mb-1{margin-bottom:0.25rem}.mb-2{margin-bottom:0.5rem}.mt-1{margin-top:0.25rem}.mt-1\.5{margin-top:0.375rem}.mt-2{margin-top:0.5rem}.mt-2\.5{margin-top:0.625rem}.mt-3{margin-top:0.75rem}.mt-4{margin-top:1rem}.mt-auto{margin-top:auto}.block{display:block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.min-h-\[38px\]{min-height:38px}.min-h-\[42px\]{min-height:42px}.w-full{width:100%}.max-w-\[1160px\]{max-width:1160px}.max-w-\[780px\]{max-width:780px}.max-w-\[90\%\]{max-width:90%}.flex-1{flex:1 1 0%}.cursor-pointer{cursor:pointer}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-between{justify-content:space-between}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.overflow-x-auto{overflow-x:auto}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-0{border-width:0px}.border-t{border-top-width:1px}.\!border-rose-700{--tw-border-opacity:1 !important;border-color:rgb(190 18 60 / var(--tw-border-opacity, 1)) !important}.border-amber-200{--tw-border-opacity:1;border-color:rgb(253 230 138 / var(--tw-border-opacity, 1))}.border-amber-200\/80{border-color:rgb(253 230 138 / 0.8)}.border-emerald-200{--tw-border-opacity:1;border-color:rgb(167 243 208 / var(--tw-border-opacity, 1))}.border-indigo-200{--tw-border-opacity:1;border-color:rgb(199 210 254 / var(--tw-border-opacity, 1))}.border-sky-200{--tw-border-opacity:1;border-color:rgb(186 230 253 / var(--tw-border-opacity, 1))}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240 / var(--tw-border-opacity, 1))}.border-teal-200{--tw-border-opacity:1;border-color:rgb(153 246 228 / var(--tw-border-opacity, 1))}.border-teal-200\/70{border-color:rgb(153 246 228 / 0.7)}.border-teal-800{--tw-border-opacity:1;border-color:rgb(17 94 89 / var(--tw-border-opacity, 1))}.\!bg-rose-600{--tw-bg-opacity:1 !important;background-color:rgb(225 29 72 / var(--tw-bg-opacity, 1)) !important}.bg-\[\#f0f8f5\]{--tw-bg-opacity:1;background-color:rgb(240 248 245 / var(--tw-bg-opacity, 1))}.bg-amber-50{--tw-bg-opacity:1;background-color:rgb(255 251 235 / var(--tw-bg-opacity, 1))}.bg-emerald-50{--tw-bg-opacity:1;background-color:rgb(236 253 245 / var(--tw-bg-opacity, 1))}.bg-indigo-50{--tw-bg-opacity:1;background-color:rgb(238 242 255 / var(--tw-bg-opacity, 1))}.bg-sky-50{--tw-bg-opacity:1;background-color:rgb(240 249 255 / var(--tw-bg-opacity, 1))}.bg-slate-100{--tw-bg-opacity:1;background-color:rgb(241 245 249 / var(--tw-bg-opacity, 1))}.bg-teal-50{--tw-bg-opacity:1;background-color:rgb(240 253 250 / var(--tw-bg-opacity, 1))}.bg-teal-700{--tw-bg-opacity:1;background-color:rgb(15 118 110 / var(--tw-bg-opacity, 1))}.bg-transparent{background-color:transparent}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.from-amber-50\/90{--tw-gradient-from:rgb(255 251 235 / 0.9) var(--tw-gradient-from-position);--tw-gradient-to:rgb(255 251 235 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.via-teal-50\/80{--tw-gradient-to:rgb(240 253 250 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), rgb(240 253 250 / 0.8) var(--tw-gradient-via-position), var(--tw-gradient-to)}.to-sky-50\/90{--tw-gradient-to:rgb(240 249 255 / 0.9) var(--tw-gradient-to-position)}.p-2\.5{padding:0.625rem}.p-4{padding:1rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-7{padding-top:1.75rem;padding-bottom:1.75rem}.pb-3{padding-bottom:0.75rem}.pt-1{padding-top:0.25rem}.pt-2{padding-top:0.5rem}.text-center{text-align:center}.text-2xl{font-size:1.5rem;line-height:2rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-\[clamp\(24px\2c 4vw\2c 38px\)\]{font-size:clamp(24px,4vw,38px)}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-black{font-weight:900}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.uppercase{text-transform:uppercase}.leading-relaxed{line-height:1.625}.leading-snug{line-height:1.375}.leading-tight{line-height:1.25}.tracking-\[10px\]{letter-spacing:10px}.tracking-\[2px\]{letter-spacing:2px}.tracking-wider{letter-spacing:0.05em}.text-\[\#697d87\]{--tw-text-opacity:1;color:rgb(105 125 135 / var(--tw-text-opacity, 1))}.text-amber-600{--tw-text-opacity:1;color:rgb(217 119 6 / var(--tw-text-opacity, 1))}.text-amber-800{--tw-text-opacity:1;color:rgb(146 64 14 / var(--tw-text-opacity, 1))}.text-emerald-800{--tw-text-opacity:1;color:rgb(6 95 70 / var(--tw-text-opacity, 1))}.text-indigo-800{--tw-text-opacity:1;color:rgb(55 48 163 / var(--tw-text-opacity, 1))}.text-pink-700{--tw-text-opacity:1;color:rgb(190 24 93 / var(--tw-text-opacity, 1))}.text-purple-800{--tw-text-opacity:1;color:rgb(107 33 168 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85 / var(--tw-text-opacity, 1))}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59 / var(--tw-text-opacity, 1))}.text-teal-700{--tw-text-opacity:1;color:rgb(15 118 110 / var(--tw-text-opacity, 1))}.text-teal-800{--tw-text-opacity:1;color:rgb(17 94 89 / var(--tw-text-opacity, 1))}.text-teal-900{--tw-text-opacity:1;color:rgb(19 78 74 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.hover\:bg-teal-100:hover{--tw-bg-opacity:1;background-color:rgb(204 251 241 / var(--tw-bg-opacity, 1))}.hover\:bg-teal-50:hover{--tw-bg-opacity:1;background-color:rgb(240 253 250 / var(--tw-bg-opacity, 1))}.hover\:bg-teal-800:hover{--tw-bg-opacity:1;background-color:rgb(17 94 89 / var(--tw-bg-opacity, 1))}.hover\:underline:hover{-webkit-text-decoration-line:underline;text-decoration-line:underline}.focus\:border-teal-500:focus{--tw-border-opacity:1;border-color:rgb(20 184 166 / var(--tw-border-opacity, 1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}@media (min-width: 640px){.sm\:inline-flex{display:inline-flex}.sm\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.sm\:text-2xl{font-size:1.5rem;line-height:2rem}.sm\:text-sm{font-size:0.875rem;line-height:1.25rem}}</style></head>
+<body>
+
+<!-- Sticky Navigation & Status Header -->
+<nav class="top-nav" aria-label="快速導覽與狀態列">
+  <div class="max-w-[1160px] mx-auto px-3 py-2.5 flex flex-wrap items-center justify-between gap-2">
+    <div class="flex items-center gap-1.5 overflow-x-auto py-0.5">
+      <button class="nav-link active" data-scroll="#section-3d">🏝️ 3D 群島探索</button>
+      <button class="nav-link" data-scroll="#choice-journey">🧭 六站抉擇旅程</button>
+      <button class="nav-link" data-scroll="#story-game">🧪 故事互動實驗室</button>
+      <button class="nav-link" data-scroll="#card-maker-card">🪪 成長角色卡</button>
+    </div>
+    <div class="flex items-center gap-2 text-xs font-extrabold">
+      <span id="global-islands-pill" class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">🗺️ 探索 1/6 島</span>
+      <span id="global-badges-pill" class="px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200">🏅 0/8 徽章</span>
+      <button id="sound-toggle" class="px-3 py-1 rounded-full bg-slate-100 hover:bg-teal-50 text-slate-700 border border-slate-200 transition cursor-pointer" title="切換互動音效">
+        🔊 音效：開
+      </button>
+      <button id="download-source-btn" class="px-3 py-1 rounded-full bg-teal-700 hover:bg-teal-800 text-white border border-teal-800 transition cursor-pointer shadow-sm" title="直接下載乾淨的 index.html 檔案以部署至 GitHub">
+        ⬇ 下載 index.html
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero Header -->
+<header class="hero">
+  <div class="max-w-[1160px] mx-auto relative z-10">
+    <div class="kicker">MY LEARNING JOURNEY · 學習歷程群島互動探索</div>
+    <h1 class="text-[clamp(24px,4vw,38px)] font-black my-2 leading-tight text-slate-800">
+      把《氣球大頭症》走成自己的成長地圖
+    </h1>
+    <p class="m-0 max-w-[780px] text-sm leading-relaxed text-slate-600">
+      從追求掌聲，到學會謙卑；從受挫與報復，到穿上屬靈軍裝以愛和真理回應。透過 3D 群島航行、房間省思筆記、六站抉擇雷達圖與故事實驗室，探索每段經歷如何累積成「現在的自己」。
+    </p>
+  </div>
+</header>
+
+<main>
+  <!-- SECTION 1: 3D ARCHIPELAGO STAGE -->
+  <section id="section-3d" class="stage-wrap" aria-label="可互動的三維學習歷程群島">
+    <canvas id="world" aria-label="3D 學習群島，可拖曳旋轉、縮放及點選島嶼"></canvas>
+    <!-- 2D Projected Floating Island Labels -->
+    <div id="island-markers"></div>
+
+    <!-- Top HUD & Atmosphere Switcher -->
+    <div class="hud-top">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="hud-pill" id="counter">🏝️ 第 1 / 6 座島｜起點島</span>
+        <span class="hud-pill hidden sm:inline-flex">⛵ 點選島嶼可派小帆船航行前往</span>
+      </div>
+      <div class="env-switcher" role="group" aria-label="切換天色氛圍">
+        <button class="env-btn active" data-env="day">☀️ 晨曦</button>
+        <button class="env-btn" data-env="sunset">🌅 黃昏</button>
+        <button class="env-btn" data-env="night">🌙 星夜</button>
+      </div>
+    </div>
+
+    <!-- Bottom Controls Bar -->
+    <div class="controls-bar">
+      <button class="btn" id="prev-island" aria-label="上一座島">← 上一座島</button>
+      <button class="btn" id="minus" aria-label="縮小視角">－ 縮小</button>
+      <button class="btn" id="reset">🗺️ 全景俯瞰</button>
+      <button class="btn" id="plus" aria-label="放大視角">＋ 放大</button>
+      <button class="btn btn-primary" id="next">下一座島 →</button>
+      <button class="btn" id="auto-tour" aria-pressed="false">✈️ 自動環島導覽</button>
+    </div>
+    <div class="text-center bg-[#f0f8f5] text-[#697d87] text-xs px-3 pb-3">
+      💡 操作提示：單指或滑鼠拖曳可 360° 旋轉視角、滾輪／雙指縮放；直接點擊 3D 島嶼或上方標籤即可航行聚焦（雙擊島嶼可拉近特寫）。
+    </div>
+  </section>
+
+  <!-- SECTION 2: ISLAND LIST & ISLAND DETAIL + INTERACTIVE ROOM JOURNAL -->
+  <div class="layout-grid">
+    <!-- Left Column: Island List & Overview -->
+    <section class="panel">
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <h2>🗺️ 探索六座成長島嶼</h2>
+          <div class="muted">沿著木橋與航線前進；每座島都有三個代表經歷的開放式故事房間。</div>
+        </div>
+        <span id="explore-progress-text" class="text-xs font-extrabold text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200">
+          已踏足 1 / 6 座島
+        </span>
+      </div>
+      <div class="islands-grid" id="island-list"></div>
+
+      <!-- Core Scripture Highlight Box -->
+      <div class="mt-4 p-4 rounded-2xl bg-gradient-to-r from-amber-50/90 via-teal-50/80 to-sky-50/90 border border-amber-200/80">
+        <div class="text-[11px] font-black tracking-wider text-amber-800 uppercase">📖 單元核心金句 · 羅馬書 12:3</div>
+        <p class="text-xs sm:text-sm font-bold text-slate-700 mt-1 mb-0 leading-relaxed">
+          「我憑著所賜我的恩對你們各人說：不要看自己過於所當看的；要照著上帝所分給各人信心的大小，看得合乎中道。」
+        </p>
+      </div>
+    </section>
+
+    <!-- Right Column: Selected Island Record & Interactive Room Reflection -->
+    <section class="panel">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2>📖 島嶼紀錄與房間省思</h2>
+          <div class="muted">點選下方三個房間卡片，即可展開「深入想一想」並寫下你的個人筆記。</div>
+        </div>
+      </div>
+      <div class="detail-box" id="detail" aria-live="polite"></div>
+
+      <h2 style="margin-top:16px">🔗 能力協作線</h2>
+      <div class="muted">前一段學到的能力，如何成為下一段旅程的基礎？</div>
+      <div id="skills" class="mt-1"></div>
+    </section>
+  </div>
+
+  <!-- SECTION 3: SIX-STATION INTERACTIVE JOURNEY + BADGES + MINI QUEST + RADAR CHART -->
+  <section class="panel" id="choice-journey" style="margin-top:18px">
+    <div class="kicker">INTERACTIVE JOURNEY · 你的選擇會留下痕跡</div>
+    <div class="flex flex-wrap items-center justify-between gap-2 mt-1">
+      <h2 style="font-size:23px;margin:0">🧭 六站互動抉擇：每一次選擇，都會影響「現在的我」</h2>
+      <button class="btn text-xs" id="reset-journey">🔄 重新開始旅程</button>
+    </div>
+    <p class="muted mt-1">
+      依序走過前五段經歷。每一站選一個最接近你當下想法的回應；沒有標準答案，系統會依你的選擇即時繪製第六站「現在的我」成長雷達圖與行動建議。
+    </p>
+
+    <div class="journey-progress"><div id="progress-fill"></div></div>
+    <div class="flex justify-between items-center text-xs text-slate-500 font-bold mb-2">
+      <span id="progress-label">已完成 0 / 5 段經歷</span>
+      <span>點選題目選項後自動儲存進度</span>
+    </div>
+
+    <!-- 8 Achievement Badges Shelf -->
+    <div class="badge-shelf" id="badge-shelf" aria-label="成長成就徽章">
+      <div class="reward-badge" data-badge="first" title="完成第 1 個情境選擇">🌱 初次探索</div>
+      <div class="reward-badge" data-badge="reflect" title="在自我覺察向度獲得高分">🪞 誠實省察</div>
+      <div class="reward-badge" data-badge="empathy" title="展現同理與溫和回應">💗 同理之心</div>
+      <div class="reward-badge" data-badge="humble" title="練習謙卑與感恩分享">✨ 謙卑前行</div>
+      <div class="reward-badge" data-badge="complete" title="完成全部 5 站抉擇">🏝️ 群島旅人</div>
+      <div class="reward-badge" data-badge="journal" title="在島嶼房間寫下至少 1 則省思筆記">📝 深刻省思</div>
+      <div class="reward-badge" data-badge="scientist" title="完成故事實驗室全部 3 項互動體驗">🧪 故事實驗家</div>
+      <div class="reward-badge" data-badge="quest" title="完成一項今日生活小任務">🌟 生活實踐家</div>
+    </div>
+
+    <!-- Daily Mini Quest -->
+    <div class="challenge-box">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <div class="kicker">DAILY MINI QUEST · 今日生活小任務</div>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="tag !m-0" id="challenge-kind">生活任務</span>
+            <span class="text-xs font-extrabold text-purple-800" id="quest-streak">🔥 已累積實踐 0 次</span>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button class="btn text-xs" id="new-challenge">換一個生活任務 ↻</button>
+          <button class="btn btn-primary text-xs" id="complete-challenge">我今天做到了 ✓</button>
+        </div>
+      </div>
+      <h3 id="challenge-title" class="text-lg font-black text-slate-800 mt-2 mb-1">🌿 把學習帶進生活</h3>
+      <p id="challenge-text" class="text-xs sm:text-sm text-slate-600 m-0 leading-relaxed">
+        完成一個小小的善意行動，讓故事不只停在螢幕裡。
+      </p>
+      <div class="text-xs font-bold text-teal-700 mt-1" id="challenge-status"></div>
+    </div>
+
+    <!-- Quick Step Tabs -->
+    <div class="step-tabs mt-4" id="step-tabs" role="tablist"></div>
+
+    <!-- Active Experience Card -->
+    <div id="choice-stage"></div>
+
+    <div class="flex flex-wrap gap-2 mt-3">
+      <button class="btn" id="prev-choice">← 上一段經歷</button>
+      <button class="btn btn-primary" id="next-choice">下一段經歷 →</button>
+      <button class="btn" id="show-now">📊 展開第六站「現在的我」雷達分析 ✨</button>
+    </div>
+
+    <!-- Station 6: Now Me + Radar Chart -->
+    <div id="now-me" class="now-me-panel" aria-live="polite"></div>
+  </section>
+
+  <!-- SECTION 4: STORY INTERACTIVE LAB (4 MINI GAMES) -->
+  <section class="panel" id="story-game" style="margin-top:18px">
+    <div class="kicker">PLAY THE STORY · 把故事變成互動實驗</div>
+    <div class="flex flex-wrap items-center justify-between gap-2 mt-1">
+      <h2 style="font-size:24px;margin:0">🧪 故事互動實驗室</h2>
+      <span id="lab-progress-pill" class="text-xs font-extrabold px-3 py-1 rounded-full bg-indigo-50 text-indigo-800 border border-indigo-200">
+        實驗進度：0 / 3 完成
+      </span>
+    </div>
+    <p class="muted mt-1">
+      動手試試看：你的操作會即時改變佩佩的氣球（同步縮放 3D 起點島上的氣球！）、阿德的人際對話走向與西門的皇冠動機，最後生成一張帶有 3D 炫光效果的專屬成長角色卡。
+    </p>
+
+    <div class="game-grid">
+      <!-- Game 01: Balloon -->
+      <article class="game-card balloon-game">
+        <div class="flex justify-between items-center">
+          <div class="game-number">01 · 佩佩的氣球（同步連動 3D 起點島）</div>
+          <button class="text-xs font-bold text-teal-700 hover:underline cursor-pointer bg-transparent border-0" id="reset-balloon">🔄 重置大小</button>
+        </div>
+        <h3>🎈 掌聲越多，氣球越大？</h3>
+        <p>點擊「再多一點掌聲」觀察佩佩的表情與氣球膨脹；再按「感恩與分享」讓心回到合乎中道的大小。</p>
+        <div class="balloon-stage" aria-label="可互動氣球舞台">
+          <div class="balloon-thought" id="balloon-thought">💭 「今天考 100 分真開心！」</div>
+          <div class="balloon-string"></div>
+          <div id="interactive-balloon" class="interactive-balloon">
+            <div class="balloon-face" id="balloon-face">😊</div>
+            <span class="balloon-label" id="balloon-label">合宜自信</span>
+          </div>
+          <div class="balloon-shadow" id="balloon-shadow"></div>
+        </div>
+        <div class="flex justify-between text-[11px] font-extrabold text-slate-500">
+          <span>🌱 謙卑合宜 (10%)</span>
+          <span id="balloon-pct-badge" class="text-pink-700">目前膨脹度：25%</span>
+          <span>💥 驕傲膨脹 (100%)</span>
+        </div>
+        <div class="meter"><span id="balloon-meter" style="width:25%"></span></div>
+        <p class="text-xs leading-relaxed text-slate-600 min-h-[42px] my-1" id="balloon-feedback" aria-live="polite">
+          目前氣球大小：25%。成就可以值得開心，但不需要拿來跟別人比較。
+        </p>
+        <div class="flex flex-wrap gap-2 mt-auto pt-2">
+          <button class="btn flex-1 text-xs" id="inflate-balloon">🎈 再多一點掌聲 (+15%)</button>
+          <button class="btn btn-primary flex-1 text-xs" id="deflate-balloon">🌱 感恩與分享 (-20%)</button>
+        </div>
+      </article>
+
+      <!-- Game 02: Response Simulator -->
+      <article class="game-card response-game">
+        <div class="game-number">02 · 阿德的回應模擬器</div>
+        <h3>🛡️ 受傷時，我可以怎麼選？</h3>
+        <p>佩佩又拿成績與新鞋比較你。選一個你想嘗試的回應，看看對話與「關係平安指數」會如何發展。</p>
+
+        <div class="flex items-center justify-between bg-sky-50 border border-sky-200 rounded-xl p-2.5 text-xs mb-2">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">👧🏻</span>
+            <div>
+              <b class="text-slate-800 block">佩佩（炫耀中）：</b>
+              <span class="text-slate-600">「你看！我聽寫又考一百分，還有新鞋子，比你厲害多了！」</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="response-options">
+          <button class="response-option" data-response="revenge">
+            <span class="icon">💥</span>
+            <b>報復回去</b>
+            <small>踩泥坑濺髒她</small>
+          </button>
+          <button class="response-option" data-response="pause">
+            <span class="icon">🛡️</span>
+            <b>先停下來</b>
+            <small>穿軍裝整理情緒</small>
+          </button>
+          <button class="response-option" data-response="kind">
+            <span class="icon">💬</span>
+            <b>溫和說真話</b>
+            <small>表達感受與祝福</small>
+          </button>
+        </div>
+
+        <div class="mt-2.5">
+          <div class="flex justify-between text-[11px] font-extrabold text-slate-500 mb-1">
+            <span>關係與內心平安指數</span>
+            <span id="peace-meter-label" class="text-teal-700">等待選擇...</span>
+          </div>
+          <div class="meter"><span id="peace-meter" style="width:50%"></span></div>
+        </div>
+
+        <div class="chat-sim-box mt-auto" id="response-result" aria-live="polite">
+          👆 點選上方三種回應之一，模擬阿德的行動與恩慈老師的溫柔引導。
+        </div>
+      </article>
+
+      <!-- Game 03: Simon's Crown -->
+      <article class="game-card crown-game">
+        <div class="game-number">03 · 西門的皇冠（同步連動 3D 皇冠島）</div>
+        <h3>👑 我做這件事，最想得到什麼？</h3>
+        <p>選擇你行動背後的動機，透過「動機透視鏡」看看皇冠會裂開還是發出溫暖真光。</p>
+        <div class="crown-stage">
+          <div id="interactive-crown" class="interactive-crown">👑</div>
+          <div class="crown-crack" id="crown-crack">⚡</div>
+          <div class="crown-motive-pill" id="crown-pill">🔍 點選下方動機進行省察</div>
+        </div>
+        <div class="flex justify-between text-[11px] font-extrabold text-slate-500">
+          <span>✨ 謙卑歸榮耀</span>
+          <span id="crown-meter-label">自我中心指數：25%</span>
+          <span>⚡ 追求掌聲權柄</span>
+        </div>
+        <div class="meter"><span id="crown-meter" style="width:25%"></span></div>
+        <div class="response-options mt-2">
+          <button class="response-option" data-motive="applause">
+            <span class="icon">👏</span>
+            <b>想被稱讚</b>
+            <small>希望大家都注目我</small>
+          </button>
+          <button class="response-option" data-motive="share">
+            <span class="icon">🤝</span>
+            <b>分享功勞</b>
+            <small>肯定同伴的付出</small>
+          </button>
+          <button class="response-option" data-motive="serve">
+            <span class="icon">🙏</span>
+            <b>服事幫人</b>
+            <small>感恩並歸榮耀與神</small>
+          </button>
+        </div>
+        <p class="text-xs leading-relaxed text-slate-600 mt-2 mb-0 min-h-[38px]" id="crown-feedback" aria-live="polite">
+          選擇一種動機，觀察皇冠的變化。這不是貼標籤，而是練習誠實面對內心。
+        </p>
+      </article>
+
+      <!-- Game 04: 3D Tilt Growth Character Card -->
+      <article class="game-card growth-game" id="card-maker-card">
+        <div class="game-number">04 · 我的專屬成長角色卡（支援 PNG / SVG 下載）</div>
+        <h3>🪪 把選擇變成下一步行動</h3>
+        <p>輸入你的旅人暱稱並選擇今日格言，滑鼠移上卡片可體驗 3D 炫光傾斜效果！</p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+          <div>
+            <label for="traveler-name" class="text-[11px] font-bold text-slate-600 block mb-0.5">旅人暱稱：</label>
+            <input id="traveler-name" type="text" maxlength="16" placeholder="例如：小恩 / 謙卑旅人" class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-teal-200 bg-white focus:outline-none focus:border-teal-500 font-bold text-slate-700">
+          </div>
+          <div>
+            <label for="traveler-motto" class="text-[11px] font-bold text-slate-600 block mb-0.5">選擇卡片格言：</label>
+            <select id="traveler-motto" class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-teal-200 bg-white focus:outline-none focus:border-teal-500 font-bold text-slate-700">
+              <option value="在順境中謙卑，在受挫時選擇愛">在順境中謙卑，在受挫時選擇愛</option>
+              <option value="能力是領受的禮物，用來祝福別人">能力是領受的禮物，用來祝福別人</option>
+              <option value="不必靠比較證明自己，把榮耀歸給神">不必靠比較證明自己，把榮耀歸給神</option>
+              <option value="先停下來穿戴軍裝，溫和說出真心話">先停下來穿戴軍裝，溫和說出真心話</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="character-card-wrap">
+          <div class="character-card" id="character-card">
+            <div class="text-xs tracking-[10px] text-amber-600 font-black">✦ ✧ ✦</div>
+            <div class="character-avatar" id="character-avatar">🌱</div>
+            <div class="text-[10px] tracking-[2px] font-black text-teal-700" id="character-owner-tag">MY GROWTH CARD · 學習歷程卡</div>
+            <h3 id="character-title" class="text-xl font-black text-teal-900 my-1">正在成長的旅人</h3>
+            <p id="character-description" class="text-xs text-slate-600 leading-relaxed max-w-[90%] mx-auto my-1">
+              每一次誠實覺察與溫和回應，都能成為成長的起點。
+            </p>
+            <div class="character-stats" id="character-stats">
+              <span>謙卑　待探索</span>
+              <span>同理　待探索</span>
+              <span>省察　待探索</span>
+              <span>歷程　0/5 站</span>
+            </div>
+            <div id="character-motto-display" class="mt-3 pt-2 border-t border-teal-200/70 text-[11px] font-extrabold text-teal-800">
+              「在順境中謙卑，在受挫時選擇愛」
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-2 mt-auto pt-1">
+          <button class="btn text-xs flex-1" id="make-character">✨ 更新角色卡</button>
+          <button class="btn btn-primary text-xs flex-1" id="download-png">🖼️ 下載 PNG 圖片</button>
+          <button class="btn text-xs" id="download-character" title="下載向量 SVG 檔">⬇ SVG</button>
+        </div>
+        <p class="text-[11px] text-slate-500 mt-1.5 mb-0" id="character-feedback">
+          角色卡會綜合你的氣球、阿德回應、西門皇冠與五站抉擇自動計算生成。
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <!-- SECTION 5: CLOSING & INTERACTIVE TIMELINE -->
+  <section class="closing-banner">
+    <div class="kicker">DESTINATION · 最後一座島與旅程總結</div>
+    <strong class="block text-xl sm:text-2xl font-black text-teal-900 mt-1 leading-snug">
+      氣球會洩氣，皇冠會裂開。<br>真正的成長，是穿戴屬靈軍裝、用愛服事，把榮耀歸給上帝。
+    </strong>
+    <div class="muted mt-2">
+      現在的我，不必靠比較證明自己；我能在順境中謙卑，在受挫時不報復，並用所擁有的能力去愛人。（點擊下方時間軸圓點可快速飛往該島嶼！）
+    </div>
+    <div class="timeline-row" id="timeline"></div>
+  </section>
+</main>
+
+<footer class="max-w-[1160px] mx-auto px-5 py-7 text-slate-500 text-xs leading-relaxed flex flex-wrap justify-between items-center gap-2">
+  <div>此互動網站將《氣球大頭症》單元內容整理成 3D 學習歷程群島。所有省思筆記與抉擇進度均安全儲存於你的瀏覽器本機中。</div>
+  <div class="flex flex-wrap items-center gap-3">
+    <button id="export-all-txt" class="text-teal-700 font-extrabold hover:underline bg-transparent border-0 cursor-pointer">
+      📋 一鍵複製完整學習歷程與筆記報告
+    </button>
+    <button id="footer-download-html" class="px-3 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 font-extrabold border border-teal-200 cursor-pointer transition">
+      📦 下載 index.html（上傳 GitHub 用）
+    </button>
+  </div>
+</footer>
+
+<!-- Custom Confirmation Modal (replaces native confirm/alert) -->
+<div class="modal-backdrop" id="custom-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-card">
+    <h3 id="modal-title" class="text-lg font-black text-slate-800 m-0">確定要重新開始這趟旅程嗎？</h3>
+    <p id="modal-desc" class="text-xs sm:text-sm text-slate-600 leading-relaxed my-3">
+      這將會清除目前儲存在裝置上的五站選擇與房間省思筆記，讓你可以重新體驗並做出新的選擇。
+    </p>
+    <div class="flex justify-end gap-2 mt-4">
+      <button class="btn text-xs" id="modal-cancel">取消保留</button>
+      <button class="btn btn-primary text-xs !bg-rose-600 !border-rose-700" id="modal-confirm">確定重置</button>
+    </div>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.166.1/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.166.1/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// 在任何動態 DOM 生成前，先保存乾淨原始的 HTML 字串，供一鍵匯出部署用 index.html
+const PRISTINE_HTML = '<!doctype html>\n' + document.documentElement.outerHTML;
+
+/* ============================================================================
+   1. WEB AUDIO SYNTHESIZER (No external audio files required)
+============================================================================ */
+class SoundFX {
+  constructor() {
+    this.enabled = true;
+    this.ctx = null;
+  }
+  init() {
+    if (!this.ctx && (window.AudioContext || window.webkitAudioContext)) {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+  }
+  playTone(freq = 523.25, duration = 0.14, type = 'sine', gainVal = 0.08, slideFreq = null) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, now);
+      if (slideFreq) {
+        osc.frequency.exponentialRampToValueAtTime(slideFreq, now + duration);
+      }
+      gain.gain.setValueAtTime(gainVal, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + duration);
+    } catch (e) {}
+  }
+  islandSelect(idx) {
+    const scale = [523.25, 587.33, 659.25, 698.46, 783.99, 880.0];
+    const base = scale[idx % scale.length];
+    this.playTone(base, 0.16, 'triangle', 0.09);
+    setTimeout(() => this.playTone(base * 1.25, 0.22, 'sine', 0.07), 70);
+  }
+  click() {
+    this.playTone(660, 0.07, 'sine', 0.05, 880);
+  }
+  inflate() {
+    this.playTone(280, 0.22, 'sine', 0.09, 480);
+  }
+  deflate() {
+    this.playTone(520, 0.25, 'triangle', 0.08, 260);
+  }
+  fanfare() {
+    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+      setTimeout(() => this.playTone(f, 0.22, 'triangle', 0.09), i * 85);
+    });
+  }
+}
+const sfx = new SoundFX();
+
+document.querySelector('#sound-toggle').addEventListener('click', (e) => {
+  sfx.enabled = !sfx.enabled;
+  e.currentTarget.textContent = sfx.enabled ? '🔊 音效：開' : '🔇 音效：關';
+  if (sfx.enabled) sfx.click();
+});
+
+/* ============================================================================
+   2. DATA DEFINITIONS (Islands, Rooms, Prompts, Journey Stations, Challenges)
+============================================================================ */
+const data = [
+  {
+    name: '起點島｜我看見自己',
+    short: '發現大頭症',
+    color: 0xe8c58b,
+    summary: '佩佩拿新衣、新鞋、100 分與榮譽榜證明自己比別人強。恩慈老師用羅馬書十二章三節帶出核心問題：不要看自己過於所當看的。',
+    rooms: [
+      ['👟', '新衣新鞋', '收到禮物，開始在意別人怎麼看。'],
+      ['💯', '聽寫一百分', '成績成為炫耀的工具。'],
+      ['🎈', '氣球變大', '越誇耀，氣球大頭越膨脹。']
+    ],
+    prompts: [
+      ['我有哪些時候很想被看見？', '我可以怎麼表達感謝，而不是比較？'],
+      ['當我考好成績或表現優秀時，心裡第一個念頭是什麼？', '怎麼做能讓成就帶來感謝，而不是讓別人覺得被比下去？'],
+      ['什麼時候我會覺得自己的「大頭氣球」正在變大？', '誰曾幫助我完成看似我自己做到的事？']
+    ],
+    skills: ['自我覺察', '理解經文', '辨認驕傲'],
+    cause: '成就被拿來抬高自己 → 忽略他人的感受 → 驕傲逐漸膨脹。',
+    carry: '把觀察自己在乎什麼，帶往下一座島。'
+  },
+  {
+    name: '風雨島｜受挫的選擇',
+    short: '面對比較',
+    color: 0x9fd4ca,
+    summary: '阿德沒有新衣與高分，長期被佩佩比較後感到委屈，最後故意踩進泥坑報復。受傷的感覺可以理解，但以牙還牙仍會傷害別人。',
+    rooms: [
+      ['🎒', '哥哥的舊衣', '被比下去，覺得自己不如人。'],
+      ['✊', '委屈累積', '情緒沒有被好好說出來。'],
+      ['💦', '踩進泥坑', '故意報復，泥水濺滿佩佩。']
+    ],
+    prompts: [
+      ['我被比較時，身體和心情有什麼反應？', '我的價值真的只由新東西或分數決定嗎？'],
+      ['當委屈一直放在心裡不說時，會發生什麼事？', '我能用什麼方式安全地說出委屈？'],
+      ['報復別人之後，心裡真的會變得平安快樂嗎？', '下一次想反擊前，我可以給自己什麼暗號先停下來？']
+    ],
+    skills: ['辨認情緒', '同理他人', '承擔選擇'],
+    cause: '受到比較 → 委屈累積 → 用報復討回面子 → 傷害加深。',
+    carry: '從辨認受傷與報復，帶出更溫和的回應方式。'
+  },
+  {
+    name: '軍裝島｜另一種回應',
+    short: '練習謙卑',
+    color: 0xb5d8a2,
+    summary: '想像中的阿德穿上上帝的全副軍裝，為佩佩的成就感到高興，並溫和提醒她：能力不是拿來自誇，而是上帝所賜。',
+    rooms: [
+      ['🛡️', '穿上軍裝', '先停下衝動，選擇不報復。'],
+      ['💬', '溫和提醒', '用愛與真理表達想法。'],
+      ['🤝', '為人高興', '不因別人成功就貶低自己。']
+    ],
+    prompts: [
+      ['穿上「平安與公義的軍裝」對我來說代表什麼具體行動？', '如果我選擇不報復，情緒可以先去哪裡休息？'],
+      ['如果我選擇不報復，下一句話可以怎麼溫和地說？', '「用愛心說誠實話」跟「直接罵回去」有什麼不同？'],
+      ['我能怎麼肯定別人，又不貶低自己？', '最近有哪位同學的優點是我可以真心稱讚的？']
+    ],
+    skills: ['情緒調節', '溫和溝通', '謙卑', '同理心'],
+    cause: '覺察情緒 → 停止報復 → 溫和說真理 → 修復關係。',
+    carry: '把同理、溝通與謙卑帶進更深的價值判斷。'
+  },
+  {
+    name: '皇冠島｜西門的選擇',
+    short: '分辨動機',
+    color: 0xc1b3e2,
+    summary: '西門因邪術受到眾人注目；腓利傳講耶穌、行出神蹟後，他仍只對能力感到驚奇，甚至想用錢買屬靈權柄。外表的跟隨不等於心已改變。',
+    rooms: [
+      ['👑', '群眾的掌聲', '西門享受被稱為大能者。'],
+      ['✨', '看見神蹟', '著迷於厲害，忽略真正的信仰。'],
+      ['💰', '想買權柄', '誤以為上帝的恩賜可以交易。']
+    ],
+    prompts: [
+      ['我做這件事，是為了幫助人還是得到掌聲？', '如果沒有人稱讚，我還會願意做嗎？'],
+      ['我比較羨慕別人「看起來很厲害」，還是欣賞別人「品格很良善」？', '外表的熱鬧跟內心的真誠有什麼差別？'],
+      ['有哪些寶貴的東西（如愛、恩賜、友誼）是不能用金錢或表現交換的？', '我要如何避免把信仰或做好事當成交換條件？']
+    ],
+    skills: ['辨認動機', '價值判斷', '分辨真偽'],
+    cause: '追求注目 → 只看重能力 → 想控制恩賜 → 被彼得責備。',
+    carry: '從辨認「我想被看見」進一步檢視信念與行動是否一致。'
+  },
+  {
+    name: '真光島｜把榮耀歸主',
+    short: '學習真正的信仰',
+    color: 0xefd18a,
+    summary: '腓利把神蹟的榮耀歸給上帝；彼得與約翰指出西門心中的問題。上帝的恩賜不能用金錢或表現換取，需要謙卑領受並省察內心。',
+    rooms: [
+      ['☀️', '腓利的榜樣', '有能力，卻不把自己當主角。'],
+      ['📖', '彼得的提醒', '面對罪，承認錯誤並尋求赦免。'],
+      ['🙏', '自我省察', '思考信仰、罪、思想與行為。']
+    ],
+    prompts: [
+      ['腓利很有能力卻不搶功勞，這給我什麼啟發？', '當別人誇獎我時，我可以怎麼回應來表達感恩？'],
+      ['當別人指出我的盲點或錯誤時，我通常會怎麼反應？', '我需要向誰承認錯誤或尋求幫助？'],
+      ['安靜下來想一想，我最近最想調整的一個想法或習慣是什麼？', '我能採取哪一個具體改變？']
+    ],
+    skills: ['信仰省察', '辨別真偽', '責任感', '謙卑'],
+    cause: '看見榜樣 → 聽見提醒 → 省察內心 → 選擇悔改與改變。',
+    carry: '把省察轉化為生活實踐，抵達現在的自己。'
+  },
+  {
+    name: '現在的我｜成長之島',
+    short: '帶著能力前行',
+    color: 0x9ed8ac,
+    summary: '我可以擁有成績、能力與肯定，卻不必靠它們證明自己比別人強。我練習在順境中不自誇、在被比下去時不報復，願意為別人的成就高興，把能力用來幫助人，並把榮耀歸給上帝。',
+    rooms: [
+      ['🪞', '我看見自己', '我最在乎的是被稱讚，還是做對的事？'],
+      ['🛡️', '我如何回應', '我能停止報復、溫和說真話嗎？'],
+      ['🌱', '我接下來要做', '用自己的能力幫助別人，持續成長。']
+    ],
+    prompts: [
+      ['走完前五座島，我對自己最大的發現是什麼？', '現在的我，怎麼看待自己的優點與不足？'],
+      ['下次再遇到愛比較的同學，我準備好的回應方式是什麼？', '我想要怎樣守護心裡的平安？'],
+      ['我今天能用什麼能力幫助一個人？', '我想把哪一個選擇練習成每天的習慣？']
+    ],
+    skills: ['自我覺察', '同理心', '謙卑', '溫和溝通', '信仰實踐'],
+    cause: '覺察 → 分辨 → 選擇 → 行動 → 持續反思。',
+    carry: '這不是終點，而是把學到的能力帶進每天的新選擇。'
+  }
+];
+
+const experiences = [
+  {
+    title: '第 1 站｜起點島：我看見自己',
+    scene: '佩佩拿到新衣、新鞋，也得到一百分。大家看著她時，你最可能怎麼想？',
+    choices: [
+      { text: '我很棒！我想讓大家知道我比別人厲害。', scores: { humility: 0, empathy: 0, faith: 0, awareness: 0 }, feedback: '先誠實看見自己想被肯定的心情，是反思的起點。' },
+      { text: '我可以為自己的努力開心，也不必拿來比較。', scores: { humility: 2, empathy: 1, faith: 1, awareness: 2 }, feedback: '你開始把成就和自我價值分開，也留意別人的感受。' },
+      { text: '我想感謝幫助我的人，也記得能力是領受的禮物。', scores: { humility: 3, empathy: 1, faith: 3, awareness: 2 }, feedback: '你把感恩與謙卑放在成就之前。' }
+    ]
+  },
+  {
+    title: '第 2 站｜風雨島：受挫的選擇',
+    scene: '你被別人比較、嘲笑，心裡很委屈。你會怎麼做？',
+    choices: [
+      { text: '讓對方也難受一次，這樣才公平。', scores: { humility: 0, empathy: 0, faith: 0, awareness: 1 }, feedback: '報復的衝動很真實；下一步是看見它會帶來什麼後果。' },
+      { text: '先離開現場，等情緒平靜後再說。', scores: { humility: 1, empathy: 2, faith: 1, awareness: 3 }, feedback: '你選擇先停下來，讓情緒不替你做決定。' },
+      { text: '找可信任的人說出委屈，再用不傷人的方式表達。', scores: { humility: 2, empathy: 3, faith: 1, awareness: 3 }, feedback: '你同時照顧自己的感受，也避免把傷害傳給別人。' }
+    ]
+  },
+  {
+    title: '第 3 站｜軍裝島：另一種回應',
+    scene: '有人炫耀成就，讓你覺得自己被比下去。你會如何回應？',
+    choices: [
+      { text: '故意說出對方的缺點，讓他不要太得意。', scores: { humility: 0, empathy: 0, faith: 0, awareness: 0 }, feedback: '這種回應可能暫時讓你覺得扳回一城，卻會讓關係更遠。' },
+      { text: '先聽完，再溫和地說出我的感受。', scores: { humility: 2, empathy: 3, faith: 1, awareness: 2 }, feedback: '你練習用溫和與真實取代攻擊。' },
+      { text: '真心肯定對方，也提醒自己每個人都有不同的恩賜。', scores: { humility: 3, empathy: 3, faith: 2, awareness: 2 }, feedback: '你能欣賞別人，而不必貶低自己。' }
+    ]
+  },
+  {
+    title: '第 4 站｜皇冠島：分辨動機',
+    scene: '如果你做了一件很厲害的事，你最希望得到什麼？',
+    choices: [
+      { text: '所有人都稱讚我，讓我成為最受注目的人。', scores: { humility: 0, empathy: 0, faith: 0, awareness: 1 }, feedback: '想被看見是人的常見心情；可以再問自己：如果沒有人稱讚，我還願意做嗎？' },
+      { text: '希望努力被看見，也願意分享功勞。', scores: { humility: 2, empathy: 2, faith: 1, awareness: 2 }, feedback: '你開始兼顧肯定與分享，不把所有榮耀留給自己。' },
+      { text: '希望事情真正幫助到人，並把榮耀歸給上帝。', scores: { humility: 3, empathy: 3, faith: 3, awareness: 2 }, feedback: '你把焦點從個人掌聲轉向服事、感恩與信仰。' }
+    ]
+  },
+  {
+    title: '第 5 站｜真光島：把榮耀歸主',
+    scene: '你發現自己曾經驕傲或做錯事。你接下來會怎麼做？',
+    choices: [
+      { text: '假裝沒事，避免別人知道。', scores: { humility: 0, empathy: 0, faith: 0, awareness: 0 }, feedback: '逃避能暫時減少尷尬，但問題可能還在；你可以從承認一小步開始。' },
+      { text: '承認錯誤，向受影響的人道歉並改正。', scores: { humility: 3, empathy: 3, faith: 2, awareness: 3 }, feedback: '你願意承擔責任，讓反思變成實際改變。' },
+      { text: '向上帝禱告、省察動機，也找成熟可信的人一起面對。', scores: { humility: 3, empathy: 2, faith: 3, awareness: 3 }, feedback: '你把信仰省察與具體支持連結起來。' }
+    ]
+  }
+];
+
+const challengeList = [
+  ['💬 溫柔說真話', '今天練習用一句不傷人的話，表達自己的真實感受。', '對話任務'],
+  ['🤝 為別人高興', '真心稱讚一位同學或家人的努力，不把話題拉回自己身上。', '關係任務'],
+  ['🙏 感恩一件事', '寫下今天一項領受的能力，並想想它能怎樣幫助別人。', '感恩任務'],
+  ['🛑 暫停十秒', '遇到不順心或想反擊時，先深呼吸停十秒再回應。', '情緒任務'],
+  ['🌱 默默幫助人', '做一件不需要被公開稱讚的小事，留意自己心裡的平安。', '行動任務'],
+  ['🪞 檢查動機', '做事前先問自己：我想幫助人，還是只想被看見？', '省察任務']
+];
+
+const quickTags = ['#誠實面對', '#換位思考', '#學會感恩', '#停看聽', '#溫和說真話', '#歸榮耀與神'];
+
+/* ============================================================================
+   3. STATE & STORAGE MANAGEMENT
+============================================================================ */
+const STORAGE_KEY = 'learning-archipelago-v7-flagship';
+const chosen = Array(5).fill(null);
+let activeExperience = 0;
+let selectedIsland = 0;
+let selectedRoomIdx = 0;
+let visitedIslands = new Set([0]);
+let roomNotes = {}; // key: "islandIdx-roomIdx" -> string
+let challengeIndex = 0;
+let challengeCompleted = false;
+let questCount = 0;
+let travelerName = '';
+let travelerMotto = '在順境中謙卑，在受挫時選擇愛';
+const storyState = {
+  balloon: 25,
+  balloonTouched: false,
+  response: null,
+  motive: null
+};
+
+function toast(message) {
+  let t = document.querySelector('.floating-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.className = 'floating-toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = message;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function copyTextSafe(text, successMsg = '📋 已複製到剪貼簿！') {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    toast(successMsg);
+    sfx.fanfare();
+  } catch (e) {
+    toast('複製失敗，請手動選取複製');
+  }
+  ta.remove();
+}
+
+function saveJourney() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      chosen,
+      activeExperience,
+      visitedIslands: [...visitedIslands],
+      roomNotes,
+      challengeIndex,
+      challengeCompleted,
+      questCount,
+      travelerName,
+      travelerMotto,
+      storyState,
+      updatedAt: new Date().toISOString()
+    }));
+  } catch (e) {}
+}
+
+function loadJourney() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('learning-archipelago-v4');
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    if (saved && Array.isArray(saved.chosen) && saved.chosen.length === 5) {
+      saved.chosen.forEach((v, i) => {
+        if (v === null || (Number.isInteger(v) && v >= 0 && v < 3)) chosen[i] = v;
+      });
+    }
+    if (Number.isInteger(saved.activeExperience)) {
+      activeExperience = Math.max(0, Math.min(4, saved.activeExperience));
+    }
+    if (Array.isArray(saved.visitedIslands)) {
+      saved.visitedIslands.forEach(idx => visitedIslands.add(idx));
+    }
+    if (saved.roomNotes && typeof saved.roomNotes === 'object') {
+      roomNotes = saved.roomNotes;
+    }
+    if (Number.isInteger(saved.challengeIndex)) {
+      challengeIndex = ((saved.challengeIndex % challengeList.length) + challengeList.length) % challengeList.length;
+    }
+    challengeCompleted = !!saved.challengeCompleted;
+    questCount = Number(saved.questCount) || (challengeCompleted ? 1 : 0);
+    if (typeof saved.travelerName === 'string') travelerName = saved.travelerName;
+    if (typeof saved.travelerMotto === 'string') travelerMotto = saved.travelerMotto;
+    if (saved.storyState && typeof saved.storyState === 'object') {
+      Object.assign(storyState, saved.storyState);
+    }
+  } catch (e) {}
+}
+
+/* ============================================================================
+   4. UPGRADED 3D SCENE (Three.js: Waves, Boat, Landmarks, Atmospheres, Labels)
+============================================================================ */
+const canvas = document.querySelector('#world');
+const stage = canvas.parentElement;
+const markersContainer = document.querySelector('#island-markers');
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setClearColor(0xa9ded8);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xa9ded8);
+scene.fog = new THREE.Fog(0xa9ded8, 25, 52);
+
+const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 120);
+camera.position.set(0, 10.5, 18);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.07;
+controls.minDistance = 6.5;
+controls.maxDistance = 30;
+controls.maxPolarAngle = Math.PI * 0.47;
+controls.target.set(0, 0, 0);
+
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0x6b9b8b, 2.0);
+scene.add(hemiLight);
+
+const sun = new THREE.DirectionalLight(0xfff2d7, 3.0);
+sun.position.set(-8, 16, 9);
+sun.castShadow = true;
+sun.shadow.mapSize.set(1024, 1024);
+scene.add(sun);
+
+// Animated Ocean Mesh with Vertex Waves
+const seaGeo = new THREE.PlaneGeometry(140, 140, 48, 48);
+const seaMat = new THREE.MeshStandardMaterial({
+  color: 0x82cfcf,
+  roughness: 0.55,
+  metalness: 0.1,
+  flatShading: true
+});
+const sea = new THREE.Mesh(seaGeo, seaMat);
+sea.rotation.x = -Math.PI / 2;
+sea.position.y = -0.68;
+sea.receiveShadow = true;
+scene.add(sea);
+
+const world = new THREE.Group();
+scene.add(world);
+
+const islandGroups = [];
+const pickables = [];
+const markerNodes = [];
+let landmarkBalloonMesh = null;
+let landmarkCrownGroup = null;
+let landmarkShieldRing = null;
+const rainDrops = [];
+
+function mat(color, roughness = 0.85, emissive = 0x000000, emissiveIntensity = 0) {
+  return new THREE.MeshStandardMaterial({ color, roughness, flatShading: true, emissive, emissiveIntensity });
+}
+
+function addMesh(g, geo, m, x, y, z, cast = true) {
+  const o = new THREE.Mesh(geo, m);
+  o.position.set(x, y, z);
+  o.castShadow = cast;
+  o.receiveShadow = true;
+  g.add(o);
+  return o;
+}
+
+function tree(g, x, z, s = 1) {
+  addMesh(g, new THREE.CylinderGeometry(0.07 * s, 0.12 * s, 0.55 * s, 5), mat(0x936b4e), x, 0.25 * s, z);
+  addMesh(g, new THREE.IcosahedronGeometry(0.43 * s, 0), mat(0x559b76), x, 0.65 * s, z);
+  addMesh(g, new THREE.IcosahedronGeometry(0.29 * s, 0), mat(0x82bd85), x, 0.94 * s, z);
+}
+
+function house(g, x, z, s = 1, wall = 0xffe5bd, roof = 0xd78d67) {
+  addMesh(g, new THREE.BoxGeometry(0.8 * s, 0.62 * s, 0.68 * s), mat(wall), x, 0.48 * s, z);
+  const r = addMesh(g, new THREE.ConeGeometry(0.68 * s, 0.5 * s, 4), mat(roof), x, 0.99 * s, z);
+  r.rotation.y = Math.PI / 4;
+  addMesh(g, new THREE.BoxGeometry(0.15 * s, 0.29 * s, 0.04 * s), mat(0x517b82), x + 0.16 * s, 0.34 * s, z + 0.36 * s, false);
+  // Warm window that glows at night
+  addMesh(g, new THREE.BoxGeometry(0.15 * s, 0.16 * s, 0.04 * s), mat(0xfff0b8, 0.4, 0xffca58, 0.45), x - 0.19 * s, 0.54 * s, z + 0.36 * s, false);
+}
+
+function makeIsland(d, i) {
+  const g = new THREE.Group();
+  const x = (i - 2.5) * 4.65;
+  const z = Math.sin(i * 0.9) * 1.25;
+  g.position.set(x, 0, z);
+  g.userData.index = i;
+  world.add(g);
+
+  // Layered island cliff & grass top
+  addMesh(g, new THREE.CylinderGeometry(1.98, 1.32, 0.68, 7, 1), mat(0x9a865e), 0, -0.14, 0);
+  addMesh(g, new THREE.CylinderGeometry(1.92, 1.72, 0.25, 7, 1), mat(d.color), 0, 0.22, 0);
+  const hill = addMesh(g, new THREE.ConeGeometry(1.22, 0.92, 5), mat(d.color), 0, 0.65, -0.1);
+  hill.rotation.y = 0.3;
+
+  tree(g, -1.02, -0.25, 0.86);
+  tree(g, 1.15, -0.2, 0.74);
+  house(g, -0.35, 0.45, 0.85, 0xffebc8, 0xd88e67);
+  house(g, 0.55, -0.65, 0.66, 0xf7d8a4, 0xb87961);
+
+  // Unique Chapter Landmarks
+  if (i === 0) {
+    // Island 1: Dynamic Pink Balloon synced with Mini-Game
+    const balloonGroup = new THREE.Group();
+    balloonGroup.position.set(-0.8, 1.5, 0.4);
+    const ball = addMesh(balloonGroup, new THREE.SphereGeometry(0.35, 12, 10), mat(0xef789e, 0.4, 0xd64d7a, 0.15), 0, 0, 0);
+    ball.scale.set(1, 1.18, 1);
+    addMesh(balloonGroup, new THREE.CylinderGeometry(0.012, 0.012, 0.7, 4), mat(0xffffff), 0, -0.55, 0, false);
+    g.add(balloonGroup);
+    landmarkBalloonMesh = ball;
+  }
+  if (i === 1) {
+    // Island 2: Mud puddles & storm cloud with animated raindrops
+    for (let k = 0; k < 4; k++) {
+      addMesh(g, new THREE.CylinderGeometry(0.22, 0.25, 0.04, 7), mat(0x6e5540, 0.3), -0.65 + k * 0.42, 0.35, 0.92);
+    }
+    const stormCloud = new THREE.Group();
+    stormCloud.position.set(-0.1, 2.25, 0.6);
+    for (let c = 0; c < 3; c++) {
+      addMesh(stormCloud, new THREE.SphereGeometry(0.28 + (c === 1 ? 0.08 : 0), 7, 6), mat(0x7c909e), (c - 1) * 0.26, c === 1 ? 0.08 : 0, 0);
+    }
+    g.add(stormCloud);
+    for (let r = 0; r < 6; r++) {
+      const drop = addMesh(g, new THREE.CylinderGeometry(0.015, 0.015, 0.16, 4), mat(0x63b8ee, 0.3, 0x63b8ee, 0.3), -0.35 + r * 0.14, 1.4 + (r % 3) * 0.25, 0.6, false);
+      drop.userData.rainSeed = r * 1.1;
+      rainDrops.push(drop);
+    }
+  }
+  if (i === 2) {
+    // Island 3: Armor Shield & Rotating Golden Ring
+    addMesh(g, new THREE.BoxGeometry(0.42, 0.65, 0.16), mat(0x4f93b8, 0.4, 0x2b6585, 0.2), 0, 1.18, 0.5);
+    addMesh(g, new THREE.BoxGeometry(0.12, 0.45, 0.19), mat(0xffdf80, 0.3, 0xffc83b, 0.4), 0, 1.18, 0.5);
+    addMesh(g, new THREE.BoxGeometry(0.3, 0.12, 0.19), mat(0xffdf80, 0.3, 0xffc83b, 0.4), 0, 1.24, 0.5);
+    landmarkShieldRing = addMesh(g, new THREE.TorusGeometry(0.55, 0.03, 6, 24), mat(0xffdf80, 0.3, 0xffc83b, 0.5), 0, 1.18, 0.5, false);
+  }
+  if (i === 3) {
+    // Island 4: Simon's Golden Crown
+    landmarkCrownGroup = new THREE.Group();
+    landmarkCrownGroup.position.set(0, 1.42, 0.35);
+    const c = addMesh(landmarkCrownGroup, new THREE.TorusGeometry(0.32, 0.08, 6, 12), mat(0xf2c14e, 0.35, 0xd99b26, 0.25), 0, 0, 0);
+    c.rotation.x = Math.PI / 2;
+    for (let p = 0; p < 5; p++) {
+      const a = (p / 5) * Math.PI * 2;
+      addMesh(landmarkCrownGroup, new THREE.ConeGeometry(0.08, 0.22, 4), mat(0xffd966, 0.3, 0xe5a93c, 0.3), Math.cos(a) * 0.3, 0.14, Math.sin(a) * 0.3);
+    }
+    g.add(landmarkCrownGroup);
+  }
+  if (i === 4) {
+    // Island 5: Radiant Cross Beacon
+    addMesh(g, new THREE.BoxGeometry(0.11, 0.85, 0.11), mat(0xfff6b8, 0.2, 0xffdf5e, 0.75), 0, 1.35, 0.35);
+    addMesh(g, new THREE.BoxGeometry(0.52, 0.11, 0.11), mat(0xfff6b8, 0.2, 0xffdf5e, 0.75), 0, 1.48, 0.35);
+  }
+  if (i === 5) {
+    // Island 6: Crystal Tree of Growth
+    addMesh(g, new THREE.IcosahedronGeometry(0.45, 0), mat(0xffedb0, 0.25, 0xf7c948, 0.55), 0, 1.38, 0.25);
+  }
+
+  // Invisible hit cylinder for pointer picking
+  const hit = addMesh(g, new THREE.CylinderGeometry(2.15, 2.15, 1.4, 12), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }), 0, 0.6, 0, false);
+  hit.userData.index = i;
+  pickables.push(hit);
+
+  islandGroups.push(g);
+
+  // Create 2D Projected HTML Marker
+  const marker = document.createElement('button');
+  marker.className = 'island-marker';
+  marker.type = 'button';
+  marker.innerHTML = `<span class="check-dot">0${i + 1}</span><span>${d.name.split('｜')[0]}</span>`;
+  marker.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    selectIsland(i, true);
+  });
+  markersContainer.appendChild(marker);
+  markerNodes.push(marker);
+
+  return g;
+}
+
+data.forEach(makeIsland);
+
+// Decorative shorelines, flowers, flags, and arched bridges
+const artGroup = new THREE.Group();
+world.add(artGroup);
+const trimMat = new THREE.MeshStandardMaterial({ color: 0xf7e8bd, roughness: 0.55, metalness: 0.05 });
+const pathMat = new THREE.MeshStandardMaterial({ color: 0xc9a77c, roughness: 1 });
+const flowerMats = [0xf4a7bc, 0xffd66b, 0xffffff, 0xb5a4ef].map(c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.7 }));
+
+for (let i = 0; i < islandGroups.length; i++) {
+  const pos = islandGroups[i].position;
+  const shoreline = new THREE.Mesh(new THREE.TorusGeometry(1.86, 0.048, 7, 42), trimMat);
+  shoreline.rotation.x = Math.PI / 2;
+  shoreline.position.set(pos.x, 0.31, pos.z);
+  artGroup.add(shoreline);
+
+  for (let j = 0; j < 5; j++) {
+    const a = j * 1.15 + i * 0.4;
+    const x = pos.x + Math.cos(a) * 1.35;
+    const z = pos.z + Math.sin(a) * 1.35;
+    const pebble = new THREE.Mesh(new THREE.DodecahedronGeometry(0.11, 0), pathMat);
+    pebble.position.set(x, 0.39, z);
+    pebble.scale.set(1, 0.45, 0.75);
+    artGroup.add(pebble);
+  }
+  for (let j = 0; j < 7; j++) {
+    const a = j * 2.4 + i;
+    const x = pos.x + Math.cos(a) * 1.48;
+    const z = pos.z + Math.sin(a) * 1.48;
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.025, 0.16, 4), mat(0x568e63));
+    stem.position.set(x, 0.48, z);
+    artGroup.add(stem);
+    const bloom = new THREE.Mesh(new THREE.SphereGeometry(0.085, 7, 5), flowerMats[(i + j) % flowerMats.length]);
+    bloom.position.set(x, 0.58, z);
+    bloom.scale.set(1, 0.75, 1);
+    artGroup.add(bloom);
+  }
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.035, 0.75, 5), mat(0x8c7258));
+  pole.position.set(pos.x + 0.2, 1.22, pos.z - 1.1);
+  artGroup.add(pole);
+  const flag = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.34, 3), new THREE.MeshStandardMaterial({ color: data[i].color, roughness: 0.6 }));
+  flag.rotation.z = -Math.PI / 2;
+  flag.position.set(pos.x + 0.39, 1.36, pos.z - 1.1);
+  artGroup.add(flag);
+}
+
+// Floating crystals, star beacons & clouds
+const glowMat = new THREE.MeshStandardMaterial({ color: 0xfff1b8, emissive: 0xffd76a, emissiveIntensity: 0.65, roughness: 0.3 });
+const crystalMat = new THREE.MeshStandardMaterial({ color: 0xa5d9f2, emissive: 0x367eac, emissiveIntensity: 0.18, roughness: 0.28, metalness: 0.12, flatShading: true });
+const deco = new THREE.Group();
+world.add(deco);
+
+for (let i = 0; i < 6; i++) {
+  const pos = islandGroups[i].position;
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(2.18, 0.025, 6, 48), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55 }));
+  ring.rotation.x = Math.PI / 2;
+  ring.position.set(pos.x, 0.42, pos.z);
+  deco.add(ring);
+
+  const crystal = addMesh(deco, new THREE.OctahedronGeometry(0.22, 0), crystalMat, pos.x + ((i % 2) ? 1.7 : -1.7), 0.35 + ((i % 3) * 0.16), pos.z + 0.4);
+  crystal.rotation.set(0.4, 0.7, 0.2);
+
+  const star = addMesh(deco, new THREE.OctahedronGeometry(0.15, 0), glowMat, pos.x + 0.1, 2.22, pos.z + 0.2, false);
+  star.userData.floatSeed = i * 1.7;
+}
+
+const cloudMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, transparent: true, opacity: 0.85 });
+for (let i = 0; i < 9; i++) {
+  const cloud = new THREE.Group();
+  cloud.position.set(-13 + i * 3.3, 3.3 + (i % 3) * 0.55, -4 - (i % 2) * 2);
+  for (let j = 0; j < 3; j++) {
+    const puff = new THREE.Mesh(new THREE.SphereGeometry(0.38 + (j === 1 ? 0.12 : 0), 8, 6), cloudMat);
+    puff.position.set((j - 1) * 0.38, j === 1 ? 0.12 : 0, 0);
+    puff.scale.y = 0.7;
+    cloud.add(puff);
+  }
+  deco.add(cloud);
+  cloud.userData.cloud = true;
+  cloud.userData.speed = 0.003 + (i % 3) * 0.0012;
+}
+
+// Bridges between islands
+for (let i = 0; i < islandGroups.length - 1; i++) {
+  const a = islandGroups[i].position;
+  const b = islandGroups[i + 1].position;
+  const mid = new THREE.Vector3((a.x + b.x) / 2, -0.18, (a.z + b.z) / 2);
+  const bridge = addMesh(world, new THREE.BoxGeometry(2.0, 0.09, 0.28), mat(0xd9b47c), mid.x, mid.y, mid.z, false);
+  bridge.rotation.y = Math.atan2(b.z - a.z, b.x - a.x);
+}
+
+// 3D Animated Explorer Sailboat
+const boat = new THREE.Group();
+const hull = addMesh(boat, new THREE.BoxGeometry(0.65, 0.18, 0.34), mat(0xc87d55), 0, 0, 0);
+const mast = addMesh(boat, new THREE.CylinderGeometry(0.02, 0.025, 0.65, 5), mat(0x7c5836), 0.05, 0.35, 0);
+const sail = addMesh(boat, new THREE.ConeGeometry(0.28, 0.52, 3), mat(0xffffff, 0.5, 0xfff8e7, 0.15), 0.08, 0.38, 0);
+sail.rotation.y = Math.PI / 4;
+const boatLight = addMesh(boat, new THREE.SphereGeometry(0.06, 6, 6), glowMat, 0.28, 0.15, 0, false);
+const wakeRing = new THREE.Mesh(
+  new THREE.RingGeometry(0.25, 0.42, 20),
+  new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, transparent: true, opacity: 0.55 })
+);
+wakeRing.rotation.x = Math.PI / 2;
+wakeRing.position.y = -0.06;
+boat.add(wakeRing);
+
+const initPos = islandGroups[0].position;
+boat.position.set(initPos.x, -0.48, initPos.z + 2.25);
+world.add(boat);
+const boatTarget = new THREE.Vector3(initPos.x, -0.48, initPos.z + 2.25);
+
+// Atmosphere / Time-of-Day Presets
+const envPresets = {
+  day: {
+    sky: 0xa9ded8,
+    sea: 0x82cfcf,
+    hemiSky: 0xffffff,
+    hemiGround: 0x6b9b8b,
+    hemiInt: 2.0,
+    sunColor: 0xfff2d7,
+    sunInt: 3.0,
+    stageBg: 'linear-gradient(180deg, #bce9e8, #8fcfda)'
+  },
+  sunset: {
+    sky: 0xf4c5b5,
+    sea: 0x6da8b8,
+    hemiSky: 0xffe0b5,
+    hemiGround: 0x7c5a68,
+    hemiInt: 1.75,
+    sunColor: 0xff9e5e,
+    sunInt: 3.4,
+    stageBg: 'linear-gradient(180deg, #f9d1b7, #dca6b8)'
+  },
+  night: {
+    sky: 0x1a3047,
+    sea: 0x1e4b63,
+    hemiSky: 0x6488b8,
+    hemiGround: 0x182b38,
+    hemiInt: 1.15,
+    sunColor: 0x9ec5ff,
+    sunInt: 1.6,
+    stageBg: 'linear-gradient(180deg, #16293d, #244861)'
+  }
+};
+
+document.querySelectorAll('.env-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.env-btn').forEach(b => b.classList.toggle('active', b === btn));
+    const p = envPresets[btn.dataset.env];
+    if (!p) return;
+    scene.background.setHex(p.sky);
+    scene.fog.color.setHex(p.sky);
+    seaMat.color.setHex(p.sea);
+    hemiLight.color.setHex(p.hemiSky);
+    hemiLight.groundColor.setHex(p.hemiGround);
+    hemiLight.intensity = p.hemiInt;
+    sun.color.setHex(p.sunColor);
+    sun.intensity = p.sunInt;
+    stage.style.background = p.stageBg;
+    sfx.click();
+    toast(`已切換至「${btn.textContent.trim()}」氛圍`);
+  });
+});
+
+// Camera, Raycasting & Render Loop
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+let focusTarget = null;
+let autoTour = false;
+let autoTourTimer = 0;
+
+function resize() {
+  const r = stage.getBoundingClientRect();
+  renderer.setSize(r.width, r.height, false);
+  camera.aspect = r.width / r.height;
+  camera.updateProjectionMatrix();
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+}
+new ResizeObserver(resize).observe(stage);
+resize();
+
+// Project 3D island coordinates to 2D floating HTML markers
+const tempVec = new THREE.Vector3();
+function updateMarkers() {
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  for (let i = 0; i < islandGroups.length; i++) {
+    const g = islandGroups[i];
+    tempVec.set(g.position.x, g.position.y + 2.55, g.position.z);
+    tempVec.project(camera);
+    const x = (tempVec.x * 0.5 + 0.5) * width;
+    const y = (-(tempVec.y * 0.5) + 0.5) * height;
+    const marker = markerNodes[i];
+    if (tempVec.z > 1 || x < -40 || x > width + 40 || y < 35 || y > height - 10) {
+      marker.style.opacity = '0';
+      marker.style.pointerEvents = 'none';
+    } else {
+      marker.style.opacity = '1';
+      marker.style.pointerEvents = 'auto';
+      marker.style.left = `${x}px`;
+      marker.style.top = `${y}px`;
+    }
+  }
+}
+
+// Store base ocean vertices for wave animation
+const seaPosAttr = seaGeo.attributes.position;
+const seaBaseZ = new Float32Array(seaPosAttr.count);
+for (let i = 0; i < seaPosAttr.count; i++) {
+  seaBaseZ[i] = seaPosAttr.getZ(i);
+}
+
+function render() {
+  requestAnimationFrame(render);
+  const t = performance.now();
+
+  // Subtle Ocean Vertex Waves
+  for (let i = 0; i < seaPosAttr.count; i++) {
+    const vx = seaPosAttr.getX(i);
+    const vy = seaPosAttr.getY(i);
+    const wave = Math.sin(vx * 0.35 + t * 0.002) * 0.06 + Math.cos(vy * 0.35 + t * 0.0018) * 0.05;
+    seaPosAttr.setZ(i, seaBaseZ[i] + wave);
+  }
+  seaPosAttr.needsUpdate = true;
+
+  // Floating crystals, clouds, raindrops & landmarks
+  deco.children.forEach(o => {
+    if (o.userData.floatSeed !== undefined) {
+      o.position.y = 2.2 + Math.sin(t * 0.002 + o.userData.floatSeed) * 0.16;
+      o.rotation.y += 0.01;
+      o.rotation.x += 0.005;
+    } else if (o.userData.cloud) {
+      o.position.x += o.userData.speed;
+      if (o.position.x > 17) o.position.x = -17;
+    }
+  });
+
+  rainDrops.forEach(drop => {
+    drop.position.y -= 0.025;
+    if (drop.position.y < 0.45) drop.position.y = 1.95;
+  });
+
+  if (landmarkShieldRing) {
+    landmarkShieldRing.rotation.z = t * 0.0012;
+  }
+  if (landmarkCrownGroup) {
+    landmarkCrownGroup.rotation.y = t * 0.0015;
+  }
+
+  // Sailboat movement & bobbing
+  const dx = boatTarget.x - boat.position.x;
+  const dz = boatTarget.z - boat.position.z;
+  if (Math.hypot(dx, dz) > 0.02) {
+    boat.position.x += dx * 0.05;
+    boat.position.z += dz * 0.05;
+    const targetAngle = Math.atan2(-dz, dx);
+    boat.rotation.y = THREE.MathUtils.lerp(boat.rotation.y, targetAngle, 0.1);
+  }
+  boat.position.y = -0.48 + Math.sin(t * 0.004) * 0.04;
+  boat.rotation.z = Math.sin(t * 0.003) * 0.06;
+  const wakeScale = 1 + Math.sin(t * 0.005) * 0.25;
+  wakeRing.scale.set(wakeScale, wakeScale, 1);
+
+  // Auto-tour logic
+  if (autoTour) {
+    autoTourTimer += 1;
+    camera.position.x += Math.cos(t * 0.0005) * 0.015;
+    if (autoTourTimer > 360) {
+      autoTourTimer = 0;
+      selectIsland((selectedIsland + 1) % data.length, true);
+    }
+  }
+
+  controls.update();
+
+  if (focusTarget) {
+    controls.target.lerp(focusTarget, 0.08);
+    const camGoal = new THREE.Vector3(focusTarget.x, focusTarget.y + 5.2, focusTarget.z + 6.8);
+    camera.position.lerp(camGoal, 0.07);
+    if (camera.position.distanceTo(camGoal) < 0.14) focusTarget = null;
+  }
+
+  updateMarkers();
+  renderer.render(scene, camera);
+}
+render();
+
+/* ============================================================================
+   5. ISLAND SELECTION & INTERACTIVE ROOM REFLECTION JOURNAL
+============================================================================ */
+function updateGlobalHeaderPills() {
+  document.querySelector('#global-islands-pill').textContent = `🗺️ 探索 ${visitedIslands.size}/6 島`;
+  document.querySelector('#explore-progress-text').textContent = `已踏足 ${visitedIslands.size} / 6 座島`;
+}
+
+function renderRoomDetailDrawer() {
+  const d = data[selectedIsland];
+  const r = d.rooms[selectedRoomIdx];
+  const p = d.prompts[selectedRoomIdx];
+  const noteKey = `${selectedIsland}-${selectedRoomIdx}`;
+  const existingNote = roomNotes[noteKey] || '';
+
+  let drawer = document.querySelector('#room-detail');
+  if (!drawer) {
+    drawer = document.createElement('div');
+    drawer.id = 'room-detail';
+    drawer.className = 'room-detail-drawer';
+    const roomsContainer = document.querySelector('#detail .rooms-grid');
+    if (roomsContainer) roomsContainer.after(drawer);
+  }
+
+  drawer.innerHTML = `
+    <div class="flex items-center justify-between flex-wrap gap-1">
+      <b class="text-sm text-teal-900">${r[0]} ${r[1]}｜深入想一想</b>
+      <span class="text-[11px] font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full">房間 ${selectedRoomIdx + 1} / 3</span>
+    </div>
+    <p class="text-xs text-slate-600 my-1.5">${r[2]}</p>
+    <ul class="my-2 pl-5 text-xs text-slate-700 font-medium space-y-1">
+      <li>${p[0]}</li>
+      <li>${p[1]}</li>
+    </ul>
+    <div class="mt-3 pt-2.5 border-t border-slate-200/80">
+      <label for="room-note-input" class="block text-xs font-extrabold text-slate-700 mb-1">
+        ✍️ 我的房間省思筆記（自動儲存於本機，可匯出至歷程報告）：
+      </label>
+      <div class="flex flex-wrap gap-1 mb-1.5">
+        ${quickTags.map(tag => `<button type="button" class="quick-tag-btn text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 hover:bg-teal-100 text-slate-600 hover:text-teal-800 border border-slate-200 transition cursor-pointer" data-tag="${tag}">${tag}</button>`).join('')}
+      </div>
+      <textarea id="room-note-input" rows="2" placeholder="寫下你在這個房間想到的經驗、心情或決定..." class="w-full p-2.5 text-xs rounded-xl border border-teal-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:border-teal-500 text-slate-700 leading-relaxed">${existingNote}</textarea>
+    </div>
+  `;
+
+  const textarea = drawer.querySelector('#room-note-input');
+  textarea.addEventListener('input', () => {
+    const val = textarea.value.trim();
+    if (val) {
+      roomNotes[noteKey] = textarea.value;
+    } else {
+      delete roomNotes[noteKey];
+    }
+    saveJourney();
+    updateBadges();
+    updateRoomIndicators();
+  });
+
+  drawer.querySelectorAll('.quick-tag-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tag = btn.dataset.tag;
+      textarea.value = textarea.value ? `${textarea.value} ${tag}` : `${tag} `;
+      textarea.dispatchEvent(new Event('input'));
+      textarea.focus();
+      sfx.click();
+    });
+  });
+}
+
+function updateRoomIndicators() {
+  document.querySelectorAll('#detail .room-card').forEach((card, idx) => {
+    const hasNote = !!(roomNotes[`${selectedIsland}-${idx}`] && roomNotes[`${selectedIsland}-${idx}`].trim());
+    let badge = card.querySelector('.room-note-indicator');
+    if (hasNote && !badge) {
+      badge = document.createElement('span');
+      badge.className = 'room-note-indicator';
+      badge.textContent = '✎ 已筆記';
+      card.appendChild(badge);
+    } else if (!hasNote && badge) {
+      badge.remove();
+    }
+  });
+}
+
+function selectIsland(i, fly = true) {
+  selectedIsland = (i + data.length) % data.length;
+  selectedRoomIdx = 0;
+  visitedIslands.add(selectedIsland);
+  saveJourney();
+  updateGlobalHeaderPills();
+
+  const d = data[selectedIsland];
+  document.querySelector('#counter').textContent = `🏝️ 第 ${selectedIsland + 1} / ${data.length} 座島｜${d.name.split('｜')[0]}`;
+
+  // Update Island List Cards
+  document.querySelectorAll('.island-card').forEach((b, j) => {
+    b.setAttribute('aria-pressed', String(j === selectedIsland));
+    const vBadge = b.querySelector('.island-visited-badge');
+    if (vBadge) {
+      vBadge.style.display = visitedIslands.has(j) ? 'inline-block' : 'none';
+    }
+  });
+
+  // Update 2D Projected Markers & Timeline
+  markerNodes.forEach((m, j) => {
+    m.classList.toggle('active', j === selectedIsland);
+    const dot = m.querySelector('.check-dot');
+    if (dot) dot.textContent = visitedIslands.has(j) ? '✓' : `0${j + 1}`;
+  });
+  document.querySelectorAll('.timeline-step').forEach((step, j) => {
+    step.classList.toggle('active', j === selectedIsland);
+  });
+
+  // Render Island Detail Panel
+  document.querySelector('#detail').innerHTML = `
+    <div class="kicker" style="font-size:10px;color:#377d6e">學習歷程 · 第 ${selectedIsland + 1} 站</div>
+    <h3>${d.name}</h3>
+    <p>${d.summary}</p>
+    <div class="causal-box"><b>🔍 事件因果鏈</b><br>${d.cause}</div>
+    <div class="rooms-grid">
+      ${d.rooms.map((r, idx) => `
+        <div class="room-card ${idx === selectedRoomIdx ? 'selected-room' : ''}" data-room-idx="${idx}" tabindex="0" role="button">
+          <div class="emoji">${r[0]}</div>
+          <strong>${r[1]}</strong>
+          <span>${r[2]}</span>
+        </div>
+      `).join('')}
+    </div>
+    <div style="font-size:12px;font-weight:900;margin-top:14px;color:#1f3d4d">🎒 帶走的能力</div>
+    <div>${d.skills.map(s => `<span class="tag">✦ ${s}</span>`).join('')}</div>
+    <div class="causal-box"><b>🚀 能力協作線 → 下一段旅程</b><br>${d.carry}</div>
+  `;
+
+  updateRoomIndicators();
+  renderRoomDetailDrawer();
+
+  document.querySelector('#skills').innerHTML =
+    d.skills.map(s => `<span class="tag">${s}</span>`).join('') +
+    `<span class="tag !bg-amber-100 !text-amber-900">→ 銜接下一段經歷</span>`;
+
+  // Sailboat & Camera animation
+  const pos = islandGroups[selectedIsland].position;
+  boatTarget.set(pos.x, -0.48, pos.z + 2.25);
+
+  if (fly) {
+    sfx.islandSelect(selectedIsland);
+    const p = islandGroups[selectedIsland].getWorldPosition(new THREE.Vector3());
+    focusTarget = p;
+  }
+}
+
+// Room click delegation
+document.querySelector('#detail').addEventListener('click', e => {
+  const room = e.target.closest('.room-card');
+  if (!room) return;
+  selectedRoomIdx = Number(room.dataset.roomIdx) || 0;
+  document.querySelectorAll('#detail .room-card').forEach((x, idx) => {
+    x.classList.toggle('selected-room', idx === selectedRoomIdx);
+  });
+  sfx.click();
+  renderRoomDetailDrawer();
+});
+
+// Populate Left Island List
+const list = document.querySelector('#island-list');
+data.forEach((d, i) => {
+  const b = document.createElement('button');
+  b.className = 'island-card';
+  b.type = 'button';
+  b.setAttribute('aria-pressed', String(i === 0));
+  b.innerHTML = `
+    <span class="island-visited-badge" style="display:${visitedIslands.has(i) ? 'inline-block' : 'none'}">✓ 已踏足</span>
+    <small>0${i + 1} · ${i === 5 ? '現在總結' : `經歷 ${i + 1}`}</small>
+    <strong>${d.name}</strong>
+    <span class="sub">${d.short} ↗</span>
+  `;
+  b.addEventListener('click', () => selectIsland(i, true));
+  list.appendChild(b);
+});
+
+// Populate Closing Timeline
+const timelineNode = document.querySelector('#timeline');
+timelineNode.innerHTML = data.map((d, i) => `
+  <div class="timeline-step ${i === 0 ? 'active' : ''}" data-idx="${i}">
+    <div class="timeline-dot"></div>
+    <div class="font-black text-teal-900">0${i + 1}</div>
+    <div>${d.short}</div>
+  </div>
+`).join('');
+timelineNode.querySelectorAll('.timeline-step').forEach(el => {
+  el.addEventListener('click', () => {
+    selectIsland(Number(el.dataset.idx), true);
+    document.querySelector('#section-3d').scrollIntoView({ behavior: 'smooth' });
+  });
+});
+
+// 3D Stage Controls
+document.querySelector('#prev-island').addEventListener('click', () => selectIsland(selectedIsland - 1, true));
+document.querySelector('#next').addEventListener('click', () => selectIsland(selectedIsland + 1, true));
+document.querySelector('#minus').addEventListener('click', () => {
+  camera.position.sub(controls.target).multiplyScalar(1.14).add(controls.target);
+  sfx.click();
+});
+document.querySelector('#plus').addEventListener('click', () => {
+  camera.position.sub(controls.target).multiplyScalar(0.86).add(controls.target);
+  sfx.click();
+});
+document.querySelector('#reset').addEventListener('click', () => {
+  autoTour = false;
+  document.querySelector('#auto-tour').setAttribute('aria-pressed', 'false');
+  document.querySelector('#auto-tour').classList.remove('btn-primary');
+  controls.target.set(0, 0, 0);
+  camera.position.set(0, 10.5, 18);
+  controls.update();
+  focusTarget = null;
+  sfx.click();
+  toast('已回到群島全景俯瞰');
+});
+document.querySelector('#auto-tour').addEventListener('click', (e) => {
+  autoTour = !autoTour;
+  autoTourTimer = 0;
+  e.currentTarget.setAttribute('aria-pressed', String(autoTour));
+  e.currentTarget.classList.toggle('btn-primary', autoTour);
+  e.currentTarget.textContent = autoTour ? '⏸️ 停止導覽' : '✈️ 自動環島導覽';
+  sfx.click();
+  toast(autoTour ? '✈️ 已開啟自動環島導覽' : '已暫停自動導覽');
+});
+
+// Canvas Pointer Events
+const rayPointer = new THREE.Vector2();
+let downPos = { x: 0, y: 0 };
+
+canvas.addEventListener('pointerdown', e => {
+  downPos = { x: e.clientX, y: e.clientY };
+});
+
+canvas.addEventListener('pointermove', e => {
+  if (e.buttons) return;
+  const r = canvas.getBoundingClientRect();
+  rayPointer.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+  rayPointer.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+  raycaster.setFromCamera(rayPointer, camera);
+  const hits = raycaster.intersectObjects(pickables, false);
+  canvas.style.cursor = hits.length ? 'pointer' : 'grab';
+});
+
+canvas.addEventListener('pointerup', e => {
+  if (Math.hypot(e.clientX - downPos.x, e.clientY - downPos.y) > 8) return; // Ignore drag
+  const r = canvas.getBoundingClientRect();
+  pointer.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+  pointer.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(pickables, false);
+  if (hits.length) selectIsland(hits[0].object.userData.index, true);
+});
+
+canvas.addEventListener('dblclick', e => {
+  const r = canvas.getBoundingClientRect();
+  pointer.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+  pointer.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(pickables, false);
+  if (hits.length) {
+    selectIsland(hits[0].object.userData.index, true);
+    camera.position.sub(controls.target).multiplyScalar(0.72).add(controls.target);
+    toast('🔍 已拉近島嶼特寫，點選右側房間深入探索 ✨');
+  }
+});
+
+/* ============================================================================
+   6. SIX-STATION INTERACTIVE JOURNEY + RADAR CHART + BADGES
+============================================================================ */
+const stageNode = document.querySelector('#choice-stage');
+const stepTabsNode = document.querySelector('#step-tabs');
+
+function renderStepTabs() {
+  stepTabsNode.innerHTML = experiences.map((exp, idx) => {
+    const isDone = chosen[idx] !== null;
+    const isActive = idx === activeExperience;
+    return `
+      <button type="button" class="step-tab ${isActive ? 'active' : ''} ${isDone ? 'done' : ''}" data-step="${idx}">
+        ${isDone ? '✓ ' : ''}第 ${idx + 1} 站：${exp.title.split('｜')[1].split('：')[0]}
+      </button>
+    `;
+  }).join('');
+
+  stepTabsNode.querySelectorAll('.step-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeExperience = Number(btn.dataset.step);
+      sfx.click();
+      renderExperience();
+      saveJourney();
+    });
+  });
+}
+
+function renderExperience() {
+  renderStepTabs();
+  const e = experiences[activeExperience];
+  const answer = chosen[activeExperience];
+  stageNode.innerHTML = `
+    <div class="choice-card">
+      <div class="kicker">經歷抉擇 ${activeExperience + 1} / 5</div>
+      <h3 class="text-lg sm:text-xl font-black text-slate-800 my-1.5">${e.title}</h3>
+      <p class="text-sm text-slate-700 leading-relaxed m-0">${e.scene}</p>
+      <div class="mt-2">
+        ${e.choices.map((c, i) => `
+          <label class="choice-option">
+            <input type="radio" name="experience-choice" value="${i}" ${answer === i ? 'checked' : ''}>
+            <span>${c.text}</span>
+          </label>
+        `).join('')}
+      </div>
+      ${answer !== null
+        ? `<div class="choice-note">💡 <b>成長省思：</b>${e.choices[answer].feedback}</div>`
+        : '<div class="choice-note !bg-slate-100 !border-slate-300 !text-slate-600">👆 選擇最接近你當下的回應，系統會將這個選擇納入第六站「現在的我」成長雷達圖。</div>'}
+    </div>
+  `;
+
+  stageNode.querySelectorAll('input[name="experience-choice"]').forEach(input => {
+    input.addEventListener('change', () => {
+      chosen[activeExperience] = Number(input.value);
+      sfx.click();
+      renderExperience();
+      updateProgress();
+      renderNowMe(false);
+      updateBadges();
+      makeGrowthCard();
+      saveJourney();
+      toast('✨ 選擇已記錄，已同步更新「現在的我」與角色卡');
+    });
+  });
+
+  document.querySelector('#prev-choice').disabled = activeExperience === 0;
+  document.querySelector('#next-choice').textContent = activeExperience === 4 ? '查看第六站「現在的我」 →' : '下一段經歷 →';
+}
+
+function updateProgress() {
+  const n = chosen.filter(v => v !== null).length;
+  document.querySelector('#progress-fill').style.width = (n / 5 * 100) + '%';
+  document.querySelector('#progress-label').textContent = `已完成 ${n} / 5 段經歷${n === 5 ? ' · 全部完成！快往下看你的成長雷達圖 🎉' : ''}`;
+}
+
+// Draw 4-Axis Radar Chart on HTML5 Canvas
+function drawRadarChart(canvasEl, totals, maxScore = 12) {
+  if (!canvasEl) return;
+  const ctx = canvasEl.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const size = 260;
+  canvasEl.width = size * dpr;
+  canvasEl.height = size * dpr;
+  canvasEl.style.width = `${size}px`;
+  canvasEl.style.height = `${size}px`;
+  ctx.scale(dpr, dpr);
+
+  const cx = size / 2;
+  const cy = size / 2;
+  const radius = 84;
+  const axes = [
+    { key: 'humility', label: '謙卑感恩', angle: -Math.PI / 2 },
+    { key: 'empathy', label: '同理關係', angle: 0 },
+    { key: 'faith', label: '歸榮耀與神', angle: Math.PI / 2 },
+    { key: 'awareness', label: '自我覺察', angle: Math.PI }
+  ];
+
+  ctx.clearRect(0, 0, size, size);
+
+  // Concentric diamond/polygon webs
+  for (let ring = 1; ring <= 4; ring++) {
+    const r = (radius / 4) * ring;
+    ctx.beginPath();
+    axes.forEach((ax, i) => {
+      const x = cx + Math.cos(ax.angle) * r;
+      const y = cy + Math.sin(ax.angle) * r;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.closePath();
+    ctx.fillStyle = ring % 2 === 0 ? 'rgba(255,255,255,0.55)' : 'rgba(225,244,236,0.45)';
+    ctx.fill();
+    ctx.strokeStyle = '#bddcd2';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  // Axis lines
+  axes.forEach(ax => {
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(ax.angle) * radius, cy + Math.sin(ax.angle) * radius);
+    ctx.strokeStyle = '#9ec8bb';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  });
+
+  // Data polygon
+  ctx.beginPath();
+  axes.forEach((ax, i) => {
+    const val = Math.min(maxScore, Math.max(1.5, totals[ax.key] || 0));
+    const r = (val / maxScore) * radius;
+    const x = cx + Math.cos(ax.angle) * r;
+    const y = cy + Math.sin(ax.angle) * r;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(45, 138, 120, 0.34)';
+  ctx.fill();
+  ctx.strokeStyle = '#247564';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // Dots & Labels
+  axes.forEach(ax => {
+    const val = Math.min(maxScore, Math.max(1.5, totals[ax.key] || 0));
+    const r = (val / maxScore) * radius;
+    const x = cx + Math.cos(ax.angle) * r;
+    const y = cy + Math.sin(ax.angle) * r;
+    ctx.beginPath();
+    ctx.arc(x, y, 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#e6ad45';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    const lx = cx + Math.cos(ax.angle) * (radius + 28);
+    const ly = cy + Math.sin(ax.angle) * (radius + 20);
+    ctx.fillStyle = '#1f4252';
+    ctx.font = 'bold 12px "Noto Sans TC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`${ax.label}(${totals[ax.key]})`, lx, ly);
+  });
+}
+
+function buildFullReflectionReport() {
+  const answered = chosen.filter(v => v !== null).length;
+  const totals = { humility: 0, empathy: 0, faith: 0, awareness: 0 };
+  chosen.forEach((a, i) => {
+    if (a !== null) {
+      Object.entries(experiences[i].choices[a].scores).forEach(([k, v]) => totals[k] += v);
+    }
+  });
+  const level = v => v >= answered * 2.2 ? '已展現的優勢' : v >= answered * 1.2 ? '正在累積' : '值得練習';
+  const profiles = [
+    ['謙卑與感恩', 'humility'],
+    ['同理與關係', 'empathy'],
+    ['信仰與歸榮耀', 'faith'],
+    ['自我覺察與停看聽', 'awareness']
+  ];
+  const noteEntries = Object.entries(roomNotes).filter(([, txt]) => txt && txt.trim());
+  const notesText = noteEntries.length
+    ? '\n\n【我的島嶼房間省思筆記】\n' + noteEntries.map(([k, txt]) => {
+        const [iIdx, rIdx] = k.split('-').map(Number);
+        return `・${data[iIdx].name}（${data[iIdx].rooms[rIdx][1]}）：${txt.trim()}`;
+      }).join('\n')
+    : '';
+
+  return `【學習歷程群島｜氣球大頭症 成長反思報告】
+旅人暱稱：${travelerName || '正在成長的旅人'}
+完成抉擇經歷：${answered} / 5 站
+已探索島嶼：${visitedIslands.size} / 6 座島
+${profiles.map(([name, key]) => `・${name}：${level(totals[key])}（${totals[key]} 分）`).join('\n')}${notesText}
+
+【我的成長宣言】
+「${travelerMotto}」
+我不需要靠比較證明自己。我願意在順境中謙卑，在受挫時停止報復，在選擇前省察動機，並用自己的能力幫助別人，把榮耀歸給上帝。`;
+}
+
+function renderNowMe(show = true) {
+  const panel = document.querySelector('#now-me');
+  if (show) panel.classList.add('visible');
+  const answered = chosen.filter(v => v !== null).length;
+  if (!answered) {
+    panel.innerHTML = `
+      <h3 class="text-xl font-black text-teal-950 m-0">第六站｜現在的我（成長雷達分析）</h3>
+      <p class="muted mt-1">先在上方前五段經歷中做出至少一個選擇，這裡就會即時繪製你的專屬成長雷達圖與行動建議！</p>
+    `;
+    return;
+  }
+
+  const totals = { humility: 0, empathy: 0, faith: 0, awareness: 0 };
+  chosen.forEach((a, i) => {
+    if (a !== null) {
+      Object.entries(experiences[i].choices[a].scores).forEach(([k, v]) => totals[k] += v);
+    }
+  });
+
+  const level = v => v >= answered * 2.2 ? '🌟 已展現的優勢' : v >= answered * 1.2 ? '🌱 正在穩定累積' : '🧭 值得繼續練習';
+  const profiles = [
+    ['謙卑與感恩', 'humility', '在有成就時不把自己放在別人之上，記得恩賜與幫助從哪裡來。'],
+    ['同理與關係', 'empathy', '看見別人的感受，欣賞別人的成功，避免把受傷變成新的傷害。'],
+    ['信仰與歸榮耀', 'faith', '不只追求能力或掌聲，也思考如何感恩、服事並把榮耀歸給上帝。'],
+    ['自我覺察與停看聽', 'awareness', '留意自己情緒與動機，在反應之前停一下，選擇更合宜的行動。']
+  ];
+
+  const allDone = answered === 5;
+  const strongest = [...profiles].sort((a, b) => totals[b[1]] - totals[a[1]])[0];
+  const needs = [...profiles].sort((a, b) => totals[a[1]] - totals[b[1]])[0];
+  const actions = {
+    humility: '下次被稱讚時，主動說出一個幫助過你的人，並把功勞分享出去。',
+    empathy: '下次覺得被比較時，先溫和表達「我現在有點受傷」，不要急著反擊。',
+    faith: '每天選一件你感恩的能力，想一想它可以怎樣實際幫助身邊的人。',
+    awareness: '情緒上來時，先深呼吸停十秒，問自己：「我真正想要的是什麼？這樣做會造成什麼結果？」'
+  };
+
+  panel.innerHTML = `
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <h3 class="text-xl font-black text-teal-950 m-0">📊 第六站｜現在的我（成長輪廓與雷達圖）</h3>
+      <span class="text-xs font-extrabold px-3 py-1 rounded-full bg-white/80 text-teal-800 border border-teal-200">
+        已納入 ${answered} / 5 站選擇
+      </span>
+    </div>
+    <p class="text-xs sm:text-sm text-slate-700 leading-relaxed mt-2 mb-3">
+      ${allDone ? '🎉 你的五次選擇已經完整匯聚成一張成長地圖！' : `你目前完成了 ${answered} / 5 段經歷；以下是依照已選答案形成的即時輪廓。`}
+      每個結果都不是給你貼標籤，而是幫助你看見已經在練習的能力，以及下一步可以成長的方向。
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-4 items-center">
+      <div class="flex flex-col items-center justify-center bg-white/80 rounded-2xl p-3 border border-teal-200/80">
+        <canvas id="growth-radar-canvas" aria-label="四向度成長雷達圖"></canvas>
+        <span class="text-[11px] font-bold text-slate-500 mt-1">四向度能力雷達圖</span>
+      </div>
+      <div class="profile-grid !my-0">
+        ${profiles.map(([name, key, desc]) => `
+          <div class="profile-item">
+            <strong>${name} · ${level(totals[key])}</strong>
+            <span>${desc}<br><b class="text-teal-800">目前累積：${totals[key]} 分</b></span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="action-line"><b>🌟 目前較突出的成長方向：${strongest[0]}</b><br>${strongest[2]}</div>
+    <div class="action-line"><b>🌱 下一步可以特別練習：${needs[0]}</b><br>${actions[needs[1]]}</div>
+    <div class="action-line"><b>📌 我的成長宣言</b><br>我不需要靠比較證明自己。我願意在順境中謙卑，在受挫時停止報復，在選擇前省察動機，並用自己的能力幫助別人，把榮耀歸給上帝。</div>
+
+    <div class="flex flex-wrap gap-2 mt-3">
+      <button class="btn text-xs" id="edit-choices">✏️ 回去修改我的選擇</button>
+      <button class="btn btn-primary text-xs" id="copy-reflection">📋 複製我的完整成長反思報告</button>
+    </div>
+  `;
+
+  drawRadarChart(panel.querySelector('#growth-radar-canvas'), totals, Math.max(6, answered * 3));
+
+  panel.querySelector('#edit-choices').addEventListener('click', () => {
+    panel.classList.remove('visible');
+    activeExperience = 0;
+    renderExperience();
+    document.querySelector('#choice-journey').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  panel.querySelector('#copy-reflection').addEventListener('click', () => {
+    copyTextSafe(buildFullReflectionReport(), '📋 已複製完整成長反思與房間筆記！');
+  });
+}
+
+function updateBadges() {
+  const n = chosen.filter(v => v !== null).length;
+  const hasNotes = Object.values(roomNotes).some(txt => txt && txt.trim().length > 0);
+  const labDoneCount = (storyState.balloonTouched ? 1 : 0) + (storyState.response ? 1 : 0) + (storyState.motive ? 1 : 0);
+
+  document.querySelector('#lab-progress-pill').textContent = `實驗進度：${labDoneCount} / 3 完成`;
+
+  const badgeRules = {
+    first: n >= 1,
+    reflect: n >= 2 && chosen.some((v, i) => v !== null && experiences[i].choices[v].scores.awareness >= 2),
+    empathy: chosen.some((v, i) => v !== null && experiences[i].choices[v].scores.empathy >= 2),
+    humble: chosen.some((v, i) => v !== null && experiences[i].choices[v].scores.humility >= 2),
+    complete: n === 5,
+    journal: hasNotes,
+    scientist: labDoneCount === 3,
+    quest: challengeCompleted || questCount > 0
+  };
+
+  let earnedCount = 0;
+  Object.entries(badgeRules).forEach(([id, on]) => {
+    if (on) earnedCount++;
+    const el = document.querySelector(`[data-badge="${id}"]`);
+    if (el) el.classList.toggle('earned', on);
+  });
+
+  document.querySelector('#global-badges-pill').textContent = `🏅 ${earnedCount}/8 徽章`;
+}
+
+function showChallenge() {
+  const c = challengeList[challengeIndex];
+  document.querySelector('#challenge-title').textContent = c[0];
+  document.querySelector('#challenge-text').textContent = c[1];
+  document.querySelector('#challenge-kind').textContent = c[2];
+  document.querySelector('#quest-streak').textContent = `🔥 已累積實踐 ${questCount} 次`;
+  document.querySelector('#challenge-status').textContent = challengeCompleted ? '✓ 太棒了！你今天已完成這項生活練習！' : '';
+  const btn = document.querySelector('#complete-challenge');
+  btn.textContent = challengeCompleted ? '✓ 今日已完成' : '我今天做到了 ✓';
+  btn.disabled = challengeCompleted;
+}
+
+// Custom Modal Logic for Resetting Journey
+const modal = document.querySelector('#custom-modal');
+document.querySelector('#reset-journey').addEventListener('click', () => {
+  sfx.click();
+  modal.classList.add('open');
+});
+document.querySelector('#modal-cancel').addEventListener('click', () => {
+  modal.classList.remove('open');
+});
+document.querySelector('#modal-confirm').addEventListener('click', () => {
+  modal.classList.remove('open');
+  chosen.fill(null);
+  activeExperience = 0;
+  challengeCompleted = false;
+  roomNotes = {};
+  renderExperience();
+  updateProgress();
+  renderNowMe(false);
+  document.querySelector('#now-me').classList.remove('visible');
+  updateBadges();
+  showChallenge();
+  selectIsland(selectedIsland, false);
+  makeGrowthCard();
+  saveJourney();
+  toast('🌱 旅程與筆記已重置，開始全新的探索吧！');
+});
+
+document.querySelector('#new-challenge').addEventListener('click', () => {
+  challengeIndex = (challengeIndex + 1 + Math.floor(Math.random() * (challengeList.length - 1))) % challengeList.length;
+  challengeCompleted = false;
+  sfx.click();
+  showChallenge();
+  saveJourney();
+  toast('🎲 已換一個新的生活小任務！');
+});
+
+document.querySelector('#complete-challenge').addEventListener('click', () => {
+  if (challengeCompleted) return;
+  challengeCompleted = true;
+  questCount += 1;
+  sfx.fanfare();
+  showChallenge();
+  updateBadges();
+  saveJourney();
+  toast('🌟 生活任務完成！你正在把謙卑與愛帶進日常！');
+});
+
+document.querySelector('#prev-choice').addEventListener('click', () => {
+  activeExperience = Math.max(0, activeExperience - 1);
+  sfx.click();
+  renderExperience();
+  saveJourney();
+});
+
+document.querySelector('#next-choice').addEventListener('click', () => {
+  if (chosen[activeExperience] === null) {
+    toast('👆 先選一個最接近你想法的回應，再繼續前進喔！');
+    return;
+  }
+  sfx.click();
+  if (activeExperience < 4) {
+    activeExperience++;
+    renderExperience();
+    saveJourney();
+  } else {
+    renderNowMe(true);
+    document.querySelector('#now-me').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+});
+
+document.querySelector('#show-now').addEventListener('click', () => {
+  sfx.click();
+  renderNowMe(true);
+  document.querySelector('#now-me').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+document.querySelector('#export-all-txt').addEventListener('click', () => {
+  copyTextSafe(buildFullReflectionReport(), '📋 已複製完整學習歷程與房間省思筆記！');
+});
+
+function downloadCleanIndexHtml() {
+  const blob = new Blob([PRISTINE_HTML], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'index.html';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  sfx.fanfare();
+  toast('📦 已下載 index.html！可直接上傳至你的 GitHub 儲存庫！');
+}
+
+document.querySelector('#download-source-btn').addEventListener('click', downloadCleanIndexHtml);
+document.querySelector('#footer-download-html').addEventListener('click', downloadCleanIndexHtml);
+
+/* ============================================================================
+   7. STORY INTERACTIVE LAB (Balloon, Chat Simulator, Crown, 3D Tilt Card + PNG/SVG)
+============================================================================ */
+const balloonEl = document.querySelector('#interactive-balloon');
+const balloonFace = document.querySelector('#balloon-face');
+const balloonLabel = document.querySelector('#balloon-label');
+const balloonThought = document.querySelector('#balloon-thought');
+const balloonShadow = document.querySelector('#balloon-shadow');
+
+function setBalloon(value, markTouched = true) {
+  storyState.balloon = Math.max(10, Math.min(100, value));
+  if (markTouched) storyState.balloonTouched = true;
+
+  const px = 54 + storyState.balloon * 1.12;
+  balloonEl.style.setProperty('--balloon-size', px + 'px');
+  balloonEl.style.transform = `translateY(${(25 - storyState.balloon) * 0.3}px) rotate(${(storyState.balloon - 25) * 0.12}deg)`;
+  balloonShadow.style.width = `${50 + storyState.balloon * 0.6}px`;
+
+  document.querySelector('#balloon-meter').style.width = storyState.balloon + '%';
+  document.querySelector('#balloon-pct-badge').textContent = `目前膨脹度：${storyState.balloon}%`;
+
+  // Sync with 3D Island 1 Balloon Landmark!
+  if (landmarkBalloonMesh) {
+    const s = 0.65 + (storyState.balloon / 100) * 1.15;
+    landmarkBalloonMesh.scale.set(s, s * 1.18, s);
+  }
+
+  balloonEl.classList.toggle('danger-wobble', storyState.balloon >= 75);
+
+  if (storyState.balloon >= 75) {
+    balloonFace.textContent = '😵';
+    balloonLabel.textContent = '快爆裂啦！';
+    balloonThought.textContent = '💭 「大家都要聽我的！我比所有人都強！」';
+    document.querySelector('#balloon-feedback').textContent =
+      `⚠️ 氣球已經膨脹到 ${storyState.balloon}%！當我一直想證明自己比別人強，大頭氣球隨時會破掉並傷到關係。試著按「感恩與分享」！`;
+  } else if (storyState.balloon >= 50) {
+    balloonFace.textContent = '😎';
+    balloonLabel.textContent = '我最厲害！';
+    balloonThought.textContent = '💭 「哼，阿德一定沒有新鞋跟 100 分！」';
+    document.querySelector('#balloon-feedback').textContent =
+      `氣球大小：${storyState.balloon}%。開始有點得意忘形囉！記得羅馬書 12:3 提醒我們「不要看自己過於所當看的」。`;
+  } else if (storyState.balloon <= 25) {
+    balloonFace.textContent = '😊';
+    balloonLabel.textContent = '感恩分享';
+    balloonThought.textContent = '💭 「謝謝老師跟爸媽，我也想幫同學加油！」';
+    document.querySelector('#balloon-feedback').textContent =
+      `🌱 氣球回到合宜的大小（${storyState.balloon}%）。成就仍值得開心，但我懂得感恩，不必靠比較證明自己。`;
+  } else {
+    balloonFace.textContent = '🙂';
+    balloonLabel.textContent = '合宜自信';
+    balloonThought.textContent = '💭 「今天表現不錯，繼續保持謙卑！」';
+    document.querySelector('#balloon-feedback').textContent =
+      `氣球大小：${storyState.balloon}%。我可以欣賞自己的努力，也同時顧念別人的感受。`;
+  }
+
+  updateBadges();
+  makeGrowthCard();
+  saveJourney();
+}
+
+document.querySelector('#inflate-balloon').addEventListener('click', () => {
+  sfx.inflate();
+  setBalloon(storyState.balloon + 15, true);
+  toast('🎈 氣球變大了！想想自己是否太在意掌聲（3D 起點島氣球也同步變大囉！）');
+});
+
+document.querySelector('#deflate-balloon').addEventListener('click', () => {
+  sfx.deflate();
+  setBalloon(storyState.balloon - 20, true);
+  toast('🌱 感恩與分享，讓心回到合乎中道的位置！');
+});
+
+document.querySelector('#reset-balloon').addEventListener('click', () => {
+  sfx.click();
+  setBalloon(25, true);
+  toast('🔄 已重置氣球至 25% 合宜大小');
+});
+
+// Game 02: Response Simulator
+const responseFeedback = {
+  revenge: {
+    title: '💥 報復會讓泥水濺得更遠',
+    peace: 20,
+    peaceLabel: '20%（衝突升溫）',
+    deReply: '「哼！看我用力踩泥坑濺髒妳的新鞋子！」（泥水噴了佩佩一身）',
+    teacherReply: '👩🏻‍🏫 恩慈老師：「阿德，被比較確實很委屈，但用報復回應只會讓兩個人都受傷。我們一起來練習更好的表達方式好嗎？」',
+    score: 0,
+    avatar: '😣'
+  },
+  pause: {
+    title: '🛡️ 穿上屬靈軍裝，先停下衝動',
+    peace: 78,
+    peaceLabel: '78%（守住平安）',
+    deReply: '（深呼吸停下來，在心裡禱告穿戴平安的軍裝，沒有踩進泥坑報復）',
+    teacherReply: '👩🏻‍🏫 恩慈老師：「做得好！你沒有讓生氣的衝動替你做決定，先保護了自己的心，也避免了衝突。」',
+    score: 2,
+    avatar: '🛡️'
+  },
+  kind: {
+    title: '💬 用愛與真理溫和溝通，修復關係',
+    peace: 96,
+    peaceLabel: '96%（溫和雙贏）',
+    deReply: '「佩佩，恭喜妳考一百分！不過妳一直拿分數跟我們比較時，我心裡覺得有點受傷。我們擁有能力是上帝賞賜的禮物喔！」',
+    teacherReply: '👩🏻‍🏫 恩慈老師：「太棒了！阿德既能真心為別人高興，又能溫和誠實地說出感受，這就是真正的勇敢與謙卑！」',
+    score: 3,
+    avatar: '🤝'
+  }
+};
+
+function applyResponseUI(key, playSound = true) {
+  const r = responseFeedback[key];
+  if (!r) return;
+  storyState.response = key;
+  document.querySelectorAll('[data-response]').forEach(b => {
+    b.classList.toggle('chosen', b.dataset.response === key);
+  });
+  document.querySelector('#peace-meter').style.width = r.peace + '%';
+  document.querySelector('#peace-meter-label').textContent = r.peaceLabel;
+  document.querySelector('#response-result').innerHTML = `
+    <div class="font-extrabold text-teal-900 mb-1">${r.title}</div>
+    <div class="bg-white p-2 rounded-lg border border-teal-100 mb-1.5 text-slate-700">
+      <b>🧒🏻 阿德的行動：</b>${r.deReply}
+    </div>
+    <div class="text-teal-800 font-medium">${r.teacherReply}</div>
+  `;
+  if (playSound) sfx.click();
+  updateBadges();
+  makeGrowthCard();
+  saveJourney();
+}
+
+document.querySelectorAll('[data-response]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    applyResponseUI(btn.dataset.response, true);
+    toast('🛡️ 阿德的回應已模擬並記錄至角色卡！');
+  });
+});
+
+// Game 03: Simon's Crown
+const motiveData = {
+  applause: {
+    score: 0,
+    scale: 92,
+    icon: '👑',
+    pill: '⚡ 動機透視：渴望掌聲與控制權柄',
+    title: '正在學習省察的旅人',
+    text: '你誠實注意到自己很希望被大家注目。但當我們只追求掌聲，皇冠反而容易出現裂痕。試著問自己：如果沒有人稱讚，我還願意做嗎？'
+  },
+  share: {
+    score: 2,
+    scale: 50,
+    icon: '👑',
+    pill: '🤝 動機透視：樂於分享肯定與功勞',
+    title: '願意分享的同行者',
+    text: '你希望努力被看見，同時也願意肯定同伴與家人的付出。分享功勞能讓皇冠散發溫暖而穩定的光芒！'
+  },
+  serve: {
+    score: 3,
+    scale: 18,
+    icon: '🌟',
+    pill: '🙏 動機透視：像腓利一樣把榮耀歸給神',
+    title: '把光帶給別人的旅人',
+    text: '你把焦點從個人虛榮轉向「幫助人」與「歸榮耀給上帝」。這頂謙卑的冠冕不會裂開，反而成為祝福別人的真光！'
+  }
+};
+
+function applyMotiveUI(key, playSound = true) {
+  const m = motiveData[key];
+  if (!m) return;
+  storyState.motive = key;
+  document.querySelectorAll('[data-motive]').forEach(b => {
+    b.classList.toggle('chosen', b.dataset.motive === key);
+  });
+  const crownEl = document.querySelector('#interactive-crown');
+  crownEl.textContent = m.icon;
+  crownEl.style.transform = `scale(${1 + (m.scale / 100) * 0.35}) rotate(${m.scale > 70 ? -8 : m.scale < 35 ? 0 : 3}deg)`;
+  crownEl.style.filter = m.scale > 70
+    ? 'drop-shadow(0 8px 6px rgba(199, 75, 75, 0.45)) saturate(1.4)'
+    : 'drop-shadow(0 8px 10px rgba(240, 190, 60, 0.55))';
+
+  document.querySelector('#crown-meter').style.width = m.scale + '%';
+  document.querySelector('#crown-meter-label').textContent = `自我中心指數：${m.scale}%`;
+  document.querySelector('#crown-pill').textContent = m.pill;
+  document.querySelector('#crown-crack').style.opacity = m.scale > 70 ? '1' : '0';
+  document.querySelector('#crown-crack').style.transform = m.scale > 70 ? 'scale(1.1) rotate(0deg)' : 'scale(0.3) rotate(-20deg)';
+  document.querySelector('#crown-feedback').textContent = m.text;
+
+  // Sync with 3D Island 4 Crown Landmark!
+  if (landmarkCrownGroup) {
+    const s = m.scale > 70 ? 1.35 : 1.0;
+    landmarkCrownGroup.scale.set(s, s, s);
+  }
+
+  if (playSound) sfx.click();
+  updateBadges();
+  makeGrowthCard();
+  saveJourney();
+}
+
+document.querySelectorAll('[data-motive]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    applyMotiveUI(btn.dataset.motive, true);
+    toast('👑 動機省察已記錄！誠實面對內心是成長的開始。');
+  });
+});
+
+// Game 04: Growth Character Card + 3D Holographic Tilt + PNG/SVG Download
+const nameInput = document.querySelector('#traveler-name');
+const mottoSelect = document.querySelector('#traveler-motto');
+const cardNode = document.querySelector('#character-card');
+
+nameInput.addEventListener('input', () => {
+  travelerName = nameInput.value.trim();
+  makeGrowthCard();
+  saveJourney();
+});
+
+mottoSelect.addEventListener('change', () => {
+  travelerMotto = mottoSelect.value;
+  makeGrowthCard();
+  saveJourney();
+});
+
+// 3D Tilt interaction on Character Card
+cardNode.addEventListener('pointermove', e => {
+  const r = cardNode.getBoundingClientRect();
+  const x = (e.clientX - r.left) / r.width - 0.5;
+  const y = (e.clientY - r.top) / r.height - 0.5;
+  cardNode.style.transform = `rotateY(${x * 14}deg) rotateX(${-y * 14}deg) scale(1.01)`;
+});
+cardNode.addEventListener('pointerleave', () => {
+  cardNode.style.transform = 'rotateY(0deg) rotateX(0deg) scale(1)';
+});
+
+function makeGrowthCard() {
+  const choicesCount = chosen.filter(v => v !== null).length;
+  const response = responseFeedback[storyState.response || 'pause'];
+  const motive = motiveData[storyState.motive || 'share'];
+
+  let title, avatar, desc;
+  if (storyState.balloon >= 70 || storyState.response === 'revenge' || storyState.motive === 'applause') {
+    title = '勇敢省察的旅人';
+    avatar = '🌱';
+    desc = '我正在學習不讓掌聲或一時的委屈替我做決定。我願意隨時停下來，重新做出合乎中道的選擇。';
+  } else if (response.score >= 3 && motive.score >= 3 && storyState.balloon <= 35) {
+    title = '謙卑發光的旅人';
+    avatar = '🌟';
+    desc = '我願意欣賞別人的優點、用愛心溫和說真話，並把領受的能力用來祝福人，把榮耀歸給上帝。';
+  } else {
+    title = '穩步成長的旅人';
+    avatar = '🧭';
+    desc = '我可以為自己的努力感到開心，也持續練習換位思考、檢視動機，讓每一個選擇更有愛與平安。';
+  }
+
+  const displayName = travelerName ? `${travelerName}｜${title}` : title;
+  const stats = [
+    `謙卑 ${storyState.balloon <= 35 ? '🌟 展現中' : '🌱 練習中'}`,
+    `同理 ${response.score >= 2 ? '🌟 展現中' : '🌱 可加強'}`,
+    `省察 ${motive.score >= 2 ? '🌟 展現中' : '🌱 練習中'}`,
+    `歷程 ${choicesCount}/5 站`
+  ];
+
+  document.querySelector('#character-avatar').textContent = avatar;
+  document.querySelector('#character-title').textContent = displayName;
+  document.querySelector('#character-description').textContent = desc;
+  document.querySelector('#character-stats').innerHTML = stats.map(s => `<span>${s}</span>`).join('');
+  document.querySelector('#character-motto-display').textContent = `「${travelerMotto}」`;
+
+  return { avatar, displayName, desc, stats, motto: travelerMotto };
+}
+
+document.querySelector('#make-character').addEventListener('click', () => {
+  sfx.fanfare();
+  makeGrowthCard();
+  toast('✨ 你的專屬成長角色卡已更新！');
+});
+
+// High-Resolution PNG Card Generator via HTML5 Canvas
+document.querySelector('#download-png').addEventListener('click', () => {
+  const info = makeGrowthCard();
+  const c = document.createElement('canvas');
+  c.width = 900;
+  c.height = 1160;
+  const ctx = c.getContext('2d');
+
+  // Background gradient
+  const grad = ctx.createLinearGradient(0, 0, 900, 1160);
+  grad.addColorStop(0, '#d8f4e6');
+  grad.addColorStop(0.55, '#e8ecff');
+  grad.addColorStop(1, '#fff2d6');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.roundRect(0, 0, 900, 1160, 48);
+  ctx.fill();
+
+  // Inner border
+  ctx.strokeStyle = '#b8dfd1';
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.roundRect(24, 24, 852, 1112, 36);
+  ctx.stroke();
+
+  // Top glow circle
+  ctx.fillStyle = 'rgba(255, 248, 220, 0.85)';
+  ctx.beginPath();
+  ctx.arc(450, 230, 125, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#387d6e';
+  ctx.font = 'bold 24px "Noto Sans TC", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('MY GROWTH CARD · 學習歷程群島角色卡', 450, 88);
+
+  ctx.font = '110px sans-serif';
+  ctx.fillText(info.avatar, 450, 265);
+
+  ctx.fillStyle = '#1d4c43';
+  ctx.font = 'bold 44px "Noto Sans TC", sans-serif';
+  ctx.fillText(info.displayName, 450, 400);
+
+  // Wrap description text
+  ctx.fillStyle = '#47626e';
+  ctx.font = '26px "Noto Sans TC", sans-serif';
+  const maxWidth = 700;
+  let line = '';
+  let y = 465;
+  for (const ch of info.desc) {
+    const testLine = line + ch;
+    if (ctx.measureText(testLine).width > maxWidth) {
+      ctx.fillText(line, 450, y);
+      line = ch;
+      y += 42;
+    } else {
+      line = testLine;
+    }
+  }
+  if (line) ctx.fillText(line, 450, y);
+
+  // Stats pills box
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.82)';
+  ctx.beginPath();
+  ctx.roundRect(90, 565, 720, 340, 28);
+  ctx.fill();
+
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#245249';
+  ctx.font = 'bold 26px "Noto Sans TC", sans-serif';
+  const detailLines = [
+    `✦ 四向度狀態：${info.stats.join(' ｜ ')}`,
+    `✦ 佩佩氣球狀態：膨脹度 ${storyState.balloon}%（${storyState.balloon <= 35 ? '謙卑合宜' : '提醒自己不比較'}）`,
+    `✦ 阿德回應選擇：${storyState.response ? responseFeedback[storyState.response].title : '穿上軍裝先停下來'}`,
+    `✦ 西門動機省察：${storyState.motive ? motiveData[storyState.motive].title : '願意分享與服事'}`,
+    `✦ 群島探索紀錄：已踏足 ${visitedIslands.size}/6 座島嶼`
+  ];
+  detailLines.forEach((t, idx) => {
+    ctx.fillText(t, 130, 628 + idx * 58);
+  });
+
+  // Footer Motto
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#26695b';
+  ctx.font = 'bold 30px "Noto Sans TC", sans-serif';
+  ctx.fillText(`「${info.motto}」`, 450, 995);
+
+  ctx.fillStyle = '#6c858e';
+  ctx.font = '22px "Noto Sans TC", sans-serif';
+  ctx.fillText('羅馬書 12:3 — 不要看自己過於所當看的，要看得合乎中道', 450, 1065);
+
+  c.toBlob(blob => {
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${travelerName || '我的'}成長角色卡.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    sfx.fanfare();
+    toast('🖼️ 已下載高畫質 PNG 成長角色卡！');
+  }, 'image/png');
+});
+
+// SVG Vector Card Download
+function escapeXml(s) {
+  return String(s).replace(/[<>&'"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[c]));
+}
+
+document.querySelector('#download-character').addEventListener('click', () => {
+  const info = makeGrowthCard();
+  const textLines = [
+    '我的成長角色卡',
+    info.displayName,
+    info.desc,
+    ...info.stats,
+    `氣球狀態：${storyState.balloon}%`,
+    `阿德的回應：${storyState.response ? responseFeedback[storyState.response].title : '尚未選擇'}`,
+    `西門的動機：${storyState.motive ? motiveData[storyState.motive].title : '尚未選擇'}`,
+    `格言：「${info.motto}」`
+  ];
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1100" viewBox="0 0 900 1100"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#dff5e9"/><stop offset="1" stop-color="#e8e9ff"/></linearGradient></defs><rect width="900" height="1100" rx="48" fill="url(#bg)"/><circle cx="450" cy="210" r="130" fill="#fff6d9" opacity=".8"/><text x="450" y="90" text-anchor="middle" font-size="25" font-family="sans-serif" fill="#588b7b" letter-spacing="5">MY GROWTH CARD</text><text x="450" y="255" text-anchor="middle" font-size="110">${info.avatar}</text><text x="450" y="360" text-anchor="middle" font-size="43" font-weight="bold" font-family="sans-serif" fill="#2b6256">${escapeXml(textLines[1])}</text><foreignObject x="100" y="405" width="700" height="150"><div xmlns="http://www.w3.org/1999/xhtml" style="font:26px/1.8 sans-serif;color:#526c75;text-align:center">${escapeXml(textLines[2])}</div></foreignObject>${textLines.slice(3).map((t, i) => `<text x="115" y="${600 + i * 56}" font-size="24" font-family="sans-serif" fill="#365b56">✦ ${escapeXml(t)}</text>`).join('')}<text x="450" y="1040" text-anchor="middle" font-size="24" font-family="sans-serif" fill="#588b7b">羅馬書 12:3 · 看得合乎中道</text></svg>`;
+  const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${travelerName || '我的'}成長角色卡.svg`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  sfx.fanfare();
+  toast('⬇ 已下載成長角色卡 SVG 向量檔！');
+});
+
+// Top Navigation Smooth Scroll
+document.querySelectorAll('.nav-link[data-scroll]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-link').forEach(b => b.classList.toggle('active', b === btn));
+    const target = document.querySelector(btn.dataset.scroll);
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    sfx.click();
+  });
+});
+
+/* ============================================================================
+   8. INITIALIZATION ON LOAD
+============================================================================ */
+loadJourney();
+nameInput.value = travelerName;
+mottoSelect.value = travelerMotto;
+selectIsland(0, false);
+renderExperience();
+updateProgress();
+renderNowMe(false);
+showChallenge();
+setBalloon(storyState.balloon, false);
+if (storyState.response) applyResponseUI(storyState.response, false);
+if (storyState.motive) applyMotiveUI(storyState.motive, false);
+updateBadges();
+makeGrowthCard();
+</script>
+
+</body></html>
